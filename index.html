@@ -4,359 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ramune | Online Courses</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- jQuery CDN -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <style>
         :root {
-            --background: #f8fafc;      /* slate-50 */
-            --text-primary: #575e69;     /* slate-800 */
-            --text-secondary: #64748b;   /* slate-500 */
-            --card-bg: #ffffff;          /* white */
-            --border-color: #e2e8f0;     /* slate-200 */
-            --input-bg: #f1f5f9;         /* slate-100 */
-            --primary: #4f46e5;          /* indigo-600 */
-            --primary-hover: #4338ca;    /* indigo-700 */
-            --secondary: #14b8a6;        /* teal-500 */
-            --accent: #ec4899;           /* pink-500 */
-            --subtle-hover-bg: #f1f5f9;   /* slate-100 */
-            --chapter-header-bg: #eff6ff; /* blue-50 */
-            --selected-bg: #2f2b7769;    /* slate-900 */
+            --background: #f8fafc;      
+            --text-primary: #575e69;     
+            --text-secondary: #64748b;   
+            --card-bg: #ffffff;          
+            --border-color: #e2e8f0;     
+            --input-bg: #f1f5f9;         
+            --primary: #4f46e5;          
+            --primary-hover: #4338ca;    
+            --secondary: #14b8a6;        
+            --accent: #ec4899;           
+            --subtle-hover-bg: #f1f5f9;   
+            --chapter-header-bg: #eff6ff; 
+            --selected-bg: #2f2b7769;    
         }
-        
         html.dark {
-            --background: #0f172a;       /* slate-900 */
-            --text-primary: #e2e8f0;     /* slate-200 */
-            --text-secondary: #94a3b8;   /* slate-400 */
-            --card-bg: #1e293b;          /* slate-800 */
-            --border-color: #334155;     /* slate-700 */
-            --input-bg: #334155;         /* slate-700 */
-            --subtle-hover-bg: #334155;   /* slate-700 */
-            --chapter-header-bg: #1e293b; /* slate-800 */
+            --background: #0f172a;       
+            --text-primary: #e2e8f0;     
+            --text-secondary: #94a3b8;   
+            --card-bg: #1e293b;          
+            --border-color: #334155;     
+            --input-bg: #334155;         
+            --subtle-hover-bg: #334155;   
+            --chapter-header-bg: #1e293b; 
         }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--background);
-            color: var(--text-primary);
-            transition: background-color 0.3s, color 0.3s;
-        }
-        
+        body { font-family: 'Inter', sans-serif; background-color: var(--background); color: var(--text-primary); transition: background-color 0.3s, color 0.3s; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
 
-        .selected-lesson .video-trigger {
-             background-color: #dbeafe !important; /* blue-100 */
-             color: var(--text-primary);
-        }
+        .selected-lesson .video-trigger { background-color: #dbeafe !important; color: var(--text-primary); }
+        .playing .video-trigger { background-color: var(--primary) !important; color: white; box-shadow: 0 4px 14px 0 rgb(79 70 229 / 39%); }
+        html.dark .selected-lesson .video-trigger { background-color: #1e3a8a !important; color: var(--text-primary); }
+        html.dark .playing .video-trigger { background-color: var(--primary-hover) !important; }
+        .playing .lesson-number, .selected-lesson .lesson-number { background: white !important; color: var(--primary) !important; }
+
+        .video-aspect-ratio { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 1rem; }
+        .video-aspect-ratio iframe, .video-aspect-ratio .player-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+        .loader { height: 48px; width: 48px; border: 3px solid var(--primary); border-radius: 50%; display: inline-block; position: relative; box-sizing: border-box; animation: rotation 1s linear infinite; }
+        .loader::after { content: ''; box-sizing: border-box; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 58px; height: 58px; border-radius: 50%; border: 3px solid; border-color: var(--secondary) transparent; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .playing .video-trigger {
-            background-color: var(--primary) !important;
-            color: white;
-            box-shadow: 0 4px 14px 0 rgb(79 70 229 / 39%);
-        }
+        .custom-dropdown-container { min-width: 150px; }
+        .custom-select-trigger { display: flex; justify-content: space-between; align-items: center; width: 100%; background-color: var(--input-bg); border: 1px solid var(--border-color); border-radius: 9999px; padding: 0.65rem 1rem; font-weight: 500; color: var(--text-primary); transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .custom-select-trigger:focus, .custom-select-trigger.open { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79 70 229, 0.2); }
+        .custom-select-trigger span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .custom-select-trigger i { width: 1.25em; height: 1.25em; color: var(--text-secondary); flex-shrink: 0; transition: transform 0.2s; }
+        .custom-select-trigger.open i { transform: rotate(180deg); }
 
-        html.dark .selected-lesson .video-trigger {
-            background-color: #1e3a8a !important; /* blue-900 */
-            color: var(--text-primary);
-        }
+        .custom-dropdown-panel { position: absolute; top: calc(100% + 8px); left: 0; width: 100%; max-height: 250px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 1rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); z-index: 50; overflow: hidden; display: flex; flex-direction: column; }
+        .custom-dropdown-search-wrapper { padding: 0.5rem; border-bottom: 1px solid var(--border-color); }
+        .custom-dropdown-search { width: 100%; padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border-color); background-color: var(--input-bg); color: var(--text-primary); font-size: 0.875rem; }
+        .custom-dropdown-search:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(79 70 229, 0.2); }
 
-        html.dark .playing .video-trigger {
-             background-color: var(--primary-hover) !important;
-        }
-
-        .playing .lesson-number, .selected-lesson .lesson-number {
-            background: white !important;
-            color: var(--primary) !important;
-        }
-
-        .video-aspect-ratio {
-            position: relative; width: 100%; padding-bottom: 56.25%;
-            height: 0; overflow: hidden; border-radius: 1rem;
-        }
-        .video-aspect-ratio iframe, .video-aspect-ratio .player-placeholder {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        }
-
-        /* Modern Loader */
-        .loader {
-            height: 48px;
-            width: 48px;
-            border: 3px solid var(--primary);
-            border-radius: 50%;
-            display: inline-block;
-            position: relative;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
-        }
-        .loader::after {
-            content: '';  
-            box-sizing: border-box;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 58px;
-            height: 58px;
-            border-radius: 50%;
-            border: 3px solid;
-            border-color: var(--secondary) transparent;
-        }
-        @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .custom-dropdown-options { list-style: none; padding: 0.5rem; margin: 0; overflow-y: auto; flex-grow: 1; }
+        .custom-dropdown-options li { padding: 1rem 1rem; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: background-color 0.2s, color 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 5px; }
+        .custom-dropdown-options li:hover, .custom-dropdown-options li.selected { background-color: var(--selected-bg); color: white; }
+        .custom-dropdown-options li.hidden { display: none; }
         
-        /* Custom Searchable Dropdown */
-        .custom-dropdown-container {
-            min-width: 150px;
-        }
-        .custom-select-trigger {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 9999px; /* pill shape */
-            padding: 0.65rem 1rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-        .custom-select-trigger:focus, .custom-select-trigger.open {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79 70 229, 0.2);
-        }
-        .custom-select-trigger span {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .custom-select-trigger i {
-            width: 1.25em;
-            height: 1.25em;
-            color: var(--text-secondary);
-            flex-shrink: 0;
-            transition: transform 0.2s;
-        }
-        .custom-select-trigger.open i {
-            transform: rotate(180deg);
-        }
-
-        .custom-dropdown-panel {
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 0;
-            width: 100%;
-            max-height: 250px;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            z-index: 50;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .custom-dropdown-search-wrapper {
-            padding: 0.5rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .custom-dropdown-search {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            border-radius: 0.5rem;
-            border: 1px solid var(--border-color);
-            background-color: var(--input-bg);
-            color: var(--text-primary);
-            font-size: 0.875rem;
-        }
-        .custom-dropdown-search:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(79 70 229, 0.2);
-        }
-
-        .custom-dropdown-options {
-            list-style: none;
-            padding: 0.5rem;
-            margin: 0;
-            overflow-y: auto;
-            flex-grow: 1;
-        }
-        .custom-dropdown-options li {
-            padding: 1rem 1rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.2s, color 0.2s;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin: 5px;
-        }
-        .custom-dropdown-options li:hover, .custom-dropdown-options li.selected {
-            background-color: var(--selected-bg);
-            color: white;
-        }
-        .custom-dropdown-options li.hidden {
-            display: none;
-        }
-        
-        /* Chapter Dropdown Styles */
         details.chapter-accordion summary { list-style: none; cursor: pointer; background-color: var(--chapter-header-bg); }
         details.chapter-accordion summary::-webkit-details-marker { display: none; }
         details.chapter-accordion summary .chapter-arrow { transition: transform 0.2s; }
         details.chapter-accordion[open] > summary .chapter-arrow { transform: rotate(90deg); }
 
-        /* Custom hover style to avoid Tailwind class conflicts */
-        .custom-subtle-hover:hover {
-            background-color: var(--subtle-hover-bg);
-        }
+        .custom-subtle-hover:hover { background-color: var(--subtle-hover-bg); }
 
-        /* Resource Button Styling */
-        .resource-toggle {
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-        }
-        .resource-toggle:hover, .resource-toggle:focus-visible {
-            background-color: var(--subtle-hover-bg);
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px 0 rgb(79 70 229 / 20%);
-            outline: none;
-        }
-        html.dark .resource-toggle:hover, html.dark .resource-toggle:focus-visible {
-            background-color: #334155;
-            border-color: #818cf8;
-            color: #818cf8;
-        }
-        .resource-toggle.active {
-            background-color: var(--accent);
-            border-color: var(--accent);
-            color: white;
-            transform: translateY(0);
-            box-shadow: 0 4px 14px 0 rgb(79 70 229 / 39%);
-        }
-        html.dark .resource-toggle.active {
-            background-color: var(--accent);
-            color: white;
-            box-shadow: 0 4px 14px 0 rgb(79 70 229 / 30%);
-        }
+        .resource-toggle { background-color: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-secondary); transition: all 0.2s ease-in-out; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+        .resource-toggle:hover, .resource-toggle:focus-visible { background-color: var(--subtle-hover-bg); border-color: var(--primary); color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 10px 0 rgb(79 70 229 / 20%); outline: none; }
+        html.dark .resource-toggle:hover, html.dark .resource-toggle:focus-visible { background-color: #334155; border-color: #818cf8; color: #818cf8; }
+        .resource-toggle.active { background-color: var(--accent); border-color: var(--accent); color: white; transform: translateY(0); box-shadow: 0 4px 14px 0 rgb(79 70 229 / 39%); }
+        html.dark .resource-toggle.active { background-color: var(--accent); color: white; box-shadow: 0 4px 14px 0 rgb(79 70 229 / 30%); }
 
-        /* Animated Progress Bar */
-        .progress-bar-container {
-            overflow: hidden;
-            border-radius: 9999px;
-        }
-        .progress-bar-fill {
-            background-color: #3b82f6; /* blue-500 */
-            position: relative;
-            overflow: hidden;
-            height: 100%;
-            border-radius: 9999px;
-            transition: width 0.5s ease-in-out;
-        }
-        .progress-bar-fill::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background-image: linear-gradient(
-                -45deg, 
-                rgba(255, 255, 255, .2) 25%, 
-                transparent 25%, 
-                transparent 50%, 
-                rgba(255, 255, 255, .2) 50%, 
-                rgba(255, 255, 255, .2) 75%, 
-                transparent 75%, 
-                transparent
-            );
-            z-index: 1;
-            background-size: 50px 50px;
-            animation: moveWaves 2s linear infinite;
-        }
-        #progress-bar { /* For course detail page */
-            background-color: #3b82f6; /* blue-500 */
-            position: relative;
-            overflow: hidden;
-        }
-         #progress-bar::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background-image: linear-gradient(
-                -45deg, 
-                rgba(255, 255, 255, .2) 25%, 
-                transparent 25%, 
-                transparent 50%, 
-                rgba(255, 255, 255, .2) 50%, 
-                rgba(255, 255, 255, .2) 75%, 
-                transparent 75%, 
-                transparent
-            );
-            z-index: 1;
-            background-size: 50px 50px;
-            animation: moveWaves 2s linear infinite;
-        }
-        @keyframes moveWaves {
-            0% { background-position: 0 0; }
-            100% { background-position: 50px 50px; }
-        }
+        .progress-bar-container { overflow: hidden; border-radius: 9999px; }
+        .progress-bar-fill { background-color: #3b82f6; position: relative; overflow: hidden; height: 100%; border-radius: 9999px; transition: width 0.5s ease-in-out; }
+        .progress-bar-fill::after { content: ""; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background-image: linear-gradient( -45deg, rgba(255, 255, 255, .2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%, transparent 75%, transparent ); z-index: 1; background-size: 50px 50px; animation: moveWaves 2s linear infinite; }
+        #progress-bar { background-color: #3b82f6; position: relative; overflow: hidden; }
+        #progress-bar::after { content: ""; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background-image: linear-gradient( -45deg, rgba(255, 255, 255, .2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%, transparent 75%, transparent ); z-index: 1; background-size: 50px 50px; animation: moveWaves 2s linear infinite; }
+        @keyframes moveWaves { 0% { background-position: 0 0; } 100% { background-position: 50px 50px; } }
 
-        /* Support Modal Tabs */
-        .support-tab {
-            border-bottom: 3px solid transparent;
-            color: var(--text-secondary);
-        }
-        .support-tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
-
+        .support-tab { border-bottom: 3px solid transparent; color: var(--text-secondary); }
+        .support-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="fixed inset-0 flex items-center justify-center bg-[var(--background)] z-[100] transition-opacity duration-500">
+    <div id="loading-screen" class="fixed inset-0 flex items-center justify-center bg-[var(--background)] z- transition-opacity duration-500">
         <div class="text-center">
             <span class="loader"></span>
             <p class="mt-6 text-lg font-medium text-[var(--text-secondary)]">กำลังโหลดข้อมูล...</p>
         </div>
     </div>
 
-    <!-- Error Message Display -->
-    <div id="error-message" class="hidden fixed inset-0 flex items-center justify-center bg-red-100/80 backdrop-blur-sm text-red-800 p-4 z-[100]">
+    <div id="error-message" class="hidden fixed inset-0 flex items-center justify-center bg-red-100/80 backdrop-blur-sm text-red-800 p-4 z-">
         <div class="bg-white p-8 rounded-2xl shadow-xl text-center border border-red-200">
             <i data-lucide="alert-circle" class="w-16 h-16 text-red-500 mx-auto mb-4"></i>
             <p class="text-xl font-semibold"></p>
         </div>
     </div>
 
-    <!-- Global Access Key Gate Modal -->
     <div id="access-gate-modal" class="fixed inset-0 hidden items-center justify-center z-50 bg-slate-900/80 backdrop-blur-sm p-4">
         <div class="bg-[var(--card-bg)] rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-md border border-[var(--border-color)] transform transition-all duration-300 scale-95 opacity-0">
             <h3 class="text-2xl font-bold mb-2 text-center">ยินดีต้อนรับสู่ <span class="bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]">Ramune</span></h3>
@@ -367,7 +122,6 @@
         </div>
     </div>
     
-    <!-- Support Modal -->
     <div id="support-modal" class="fixed inset-0 hidden items-center justify-center z-50 bg-slate-900/80 backdrop-blur-sm p-4">
         <div class="bg-[var(--card-bg)] rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-md border border-[var(--border-color)] transform transition-all duration-300 scale-95 opacity-0 relative">
             <button id="close-support-modal" class="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
@@ -376,7 +130,6 @@
             <h3 class="text-2xl font-bold mb-2 text-center">สนับสนุนผู้พัฒนา</h3>
             <p class="text-[var(--text-secondary)] mb-4 text-center">ขอบคุณสำหรับทุกการสนับสนุนครับ!</p>
             
-            <!-- Tabs Navigation -->
             <div class="flex border-b border-[var(--border-color)] mb-4">
                 <button class="support-tab flex-1 py-2 font-semibold transition-colors active" data-tab="promptpay">
                     <span class="flex items-center justify-center"><i data-lucide="smartphone" class="w-4 h-4 mr-2"></i>PromptPay</span>
@@ -389,7 +142,6 @@
                 </button>
             </div>
 
-            <!-- Tabs Content -->
             <div class="text-center border-b border-[var(--border-color)]">
                 <div id="tab-promptpay" class="support-tab-content space-y-3 mb-5">
                     <img src="https://promptpay.io/0959394524.png" alt="QR Code for PromptPay" class="mx-auto rounded-lg border-4 border-[var(--border-color)] w-64 h-64">
@@ -402,7 +154,6 @@
                      <p class="text-md text-[var(--text-secondary)]">ชื่อบัญชี: นาย ไชยวัฒน์ ขวัญทา</p>
                 </div>
                 <div id="tab-bank" class="support-tab-content hidden space-y-4 mb-5">
-                    <!-- Kasikorn Bank -->
                     <div class="flex items-center justify-between bg-[var(--input-bg)] p-4 rounded-lg border border-[var(--border-color)]">
                         <div class="space-y-1 text-left">
                             <p class="font-bold text-lg text-green-600">ธนาคารกสิกรไทย</p>
@@ -411,7 +162,6 @@
                         </div>
                         <img src="https://www.dpa.or.th/storage/uploads/bank/dpa_bank_kbank@2x.png" alt="KBank Logo" class="w-12 h-12 object-contain">
                     </div>
-                    <!-- SCB Bank -->
                     <div class="flex items-center justify-between bg-[var(--input-bg)] p-4 rounded-lg border border-[var(--border-color)]">
                         <div class="space-y-1 text-left">
                             <p class="font-bold text-lg text-purple-600">ธนาคารไทยพาณิชย์</p>
@@ -428,15 +178,6 @@
                         </div>
                         <img src="https://www.dpa.or.th/storage/uploads/bank/dpa_bank_krungsri@2x.png" alt="krungsri Logo" class="w-12 h-12 object-contain">
                     </div>
-                    <!-- GSB Bank -->
-                     <!-- <div class="flex items-center justify-between bg-[var(--input-bg)] p-4 rounded-lg border border-[var(--border-color)]">
-                        <div class="space-y-1 text-left">
-                            <p class="font-bold text-lg text-pink-500">ธนาคารออมสิน</p>
-                            <p class="text-sm"><span class="font-semibold">ชื่อบัญชี:</span> <span class="font-mono">นาย</span></p>
-                            <p class="text-sm"><span class="font-semibold">เลขบัญชี:</span> <span class="font-mono"></span></p>
-                        </div>
-                        <img src="https://i.postimg.cc/pX05M53v/gsb-logo.png" alt="GSB Logo" class="w-12 h-12 object-contain">
-                    </div> -->
                 </div>
             </div>
             <div class="text-center px-4 mt-5">
@@ -448,8 +189,6 @@
         </div>
     </div>
 
-
-    <!-- Header -->
     <header id="app-header" class="hidden sticky top-0 z-40 bg-[var(--background)]/80 backdrop-blur-lg border-b border-[var(--border-color)] transition-all duration-300">
         <div class="container mx-auto flex justify-between items-center p-4">
             <h1 id="home-button" class="text-2xl font-extrabold cursor-pointer transition-transform hover:scale-105">
@@ -474,7 +213,6 @@
         </div>
     </header>
 
-    <!-- Main Content -->
     <main id="app-main" class="hidden flex-grow container mx-auto p-4 md:p-8">
         <section id="course-list-section" class="py-8 transition-opacity duration-500 opacity-0">
             <div class="text-center mb-12">
@@ -482,7 +220,6 @@
                 <p class="text-lg text-[var(--text-secondary)]">เลือกหลักสูตรที่คุณสนใจเพื่อเริ่มเรียนรู้ได้เลย</p>
             </div>
 
-            <!-- UPDATED: Responsive Filter Bar -->
             <div class="flex flex-wrap md:flex-wrap-reverse justify-between items-center mb-8 lg:space-x-2  p-4 bg-[var(--card-bg)] rounded-2xl border border-[var(--border-color)] shadow-sm">
                 <label class="font-medium sm:block text-[var(--text-secondary)]">แสดง:</label>
                 <div class="relative w-full md:w-auto md:flex-grow mb-4 md:mb-0">
@@ -586,13 +323,17 @@
         </section>
     </main>
 
-    <footer id="'app-footer" class="hidden w-full bg-[var(--card-bg)] text-[var(--text-secondary)] text-center p-4 mt-8 border-t border-[var(--border-color)]">
-            &copy; <span id="currentYear"></span> <a href="https://github.com/chaiwat20180" target="_blank" rel="noopener noreferrer" class="font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">Chaiwat Kwanta</a>. All rights reserved.
+    <footer id="app-footer" class="hidden w-full bg-[var(--card-bg)] text-[var(--text-secondary)] text-center p-4 mt-8 border-t border-[var(--border-color)]">
+            © <span id="currentYear"></span> <a href="https://github.com/chaiwat20180" target="_blank" rel="noopener noreferrer" class="font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">Chaiwat Kwanta</a>. All rights reserved.
     </footer>
     <div id="key-modal" class="fixed inset-0 hidden items-center justify-center z-50 bg-slate-900/80 backdrop-blur-sm p-4"></div>
     <div id="message-box" class="fixed bottom-6 right-6 flex items-center space-x-3 text-white px-5 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-500 ease-out z-50"></div>
 
     <script>
+        // ==========================================
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwc7PFWxlhN3RlHAGjo2zpoIIoFsd7REJqGIFXacxe3B65-AOvwqLNwtXakcVi3hUztYA/exec"; 
+        // ==========================================
+
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -609,24 +350,10 @@
         };
         $('#currentYear').text(`2025 - ${new Date().getFullYear()}`);
 
-        // --- URL Obfuscation (ASCII Encoding) ---
-        const decode = (encodedArray) => encodedArray.map(code => String.fromCharCode(code)).join('');
-
-        const encodedUrls = {
-            pageAccess: [104,116,116,112,115,58,47,47,100,111,99,115,46,103,111,111,103,108,101,46,99,111,109,47,115,112,114,101,97,100,115,104,101,101,116,115,47,100,47,101,47,50,80,65,67,88,45,49,118,84,117,100,88,87,117,103,109,75,113,117,74,95,121,49,120,84,55,77,70,49,45,77,110,121,110,81,102,102,102,81,72,118,49,105,51,84,65,103,45,106,100,51,122,108,69,54,76,72,107,66,117,45,109,87,109,110,51,51,119,88,49,115,56,69,97,74,57,114,100,111,116,117,51,53,76,114,55,47,112,117,98,63,111,117,116,112,117,116,61,116,115,118,38,103,105,100,61,49,52,57,49,55,53,55,50,53,49],
-            courses: [104,116,116,112,115,58,47,47,100,111,99,115,46,103,111,111,103,108,101,46,99,111,109,47,115,112,114,101,97,100,115,104,101,101,116,115,47,100,47,101,47,50,80,65,67,88,45,49,118,84,117,100,88,87,117,103,109,75,113,117,74,95,121,49,120,84,55,77,70,49,45,77,110,121,110,81,102,102,102,81,72,118,49,105,51,84,65,103,45,106,100,51,122,108,69,54,76,72,107,66,117,45,109,87,109,110,51,51,119,88,49,115,56,69,97,74,57,114,100,111,116,117,51,53,76,114,55,47,112,117,98,63,111,117,116,112,117,116,61,116,115,118,38,103,105,100,61,48],
-            videoParts: [104,116,116,112,115,58,47,47,100,111,99,115,46,103,111,111,103,108,101,46,99,111,109,47,115,112,114,101,97,100,115,104,101,101,116,115,47,100,47,101,47,50,80,65,67,88,45,49,118,84,117,100,88,87,117,103,109,75,113,117,74,95,121,49,120,84,55,77,70,49,45,77,110,121,110,81,102,102,102,81,72,118,49,105,51,84,65,103,45,106,100,51,122,108,69,54,76,72,107,66,117,45,109,87,109,110,51,51,119,88,49,115,56,69,97,74,57,114,100,111,116,117,51,53,76,114,55,47,112,117,98,63,111,117,116,112,117,116,61,116,115,118,38,103,105,100,61,49,49,53,51,51,49,48,52,57,50],
-            keys: [104,116,116,112,115,58,47,47,100,111,99,115,46,103,111,111,103,108,101,46,99,111,109,47,115,112,114,101,97,100,115,104,101,101,116,115,47,100,47,101,47,50,80,65,67,88,45,49,118,84,117,100,88,87,117,103,109,75,113,117,74,95,121,49,120,84,55,77,70,49,45,77,110,121,110,81,102,102,102,81,72,118,49,105,51,84,65,103,45,106,100,51,122,108,69,54,76,72,107,66,117,45,109,87,109,110,51,51,119,88,49,115,56,69,97,74,57,114,100,111,116,117,51,53,76,114,55,47,112,117,98,63,111,117,116,112,117,116,61,116,115,118,38,103,105,100,61,49,53,51,48,56,55,56,57,52,57],
-            resources: [104,116,116,112,115,58,47,47,100,111,99,115,46,103,111,111,103,108,101,46,99,111,109,47,115,112,114,101,97,100,115,104,101,101,116,115,47,100,47,101,47,50,80,65,67,88,45,49,118,84,117,100,88,87,117,103,109,75,113,117,74,95,121,49,120,84,55,77,70,49,45,77,110,121,110,81,102,102,102,81,72,118,49,105,51,84,65,103,45,106,100,51,122,108,69,54,76,72,107,66,117,45,109,87,109,110,51,51,119,88,49,115,56,69,97,74,57,114,100,111,116,117,51,53,76,114,55,47,112,117,98,63,111,117,116,112,117,116,61,116,115,118,38,103,105,100,61,49,55,51,51,50,49,54,48,48,57]
-        };
-
-        const getUrl = (key) => decode(encodedUrls[key]);
-
-        let allCourses = [], filteredCourses = [], allKeys = {}, pageAccessKeys = [];
+        let allCourses = [], filteredCourses = [];
         let selectedCourseData = null, currentPlayingIndex = -1, currentPage = 1, itemsPerPage = 'all', viewType = 'grid';
         let currentVideoPartToPlay = null;
 
-        // --- Utility & UI Functions ---
         const showLoading = () => $('#loading-screen').css('opacity', 1).show();
         const hideLoading = () => { $('#loading-screen').css('opacity', 0); setTimeout(() => $('#loading-screen').hide(), 500); };
         const showErrorMessage = (msg) => { $('#error-message p').text(`เกิดข้อผิดพลาด: ${msg}`); $('#error-message').removeClass('hidden').addClass('flex'); setTimeout(() => $('#error-message').removeClass('flex').addClass('hidden'), 5000); };
@@ -653,15 +380,6 @@
             setTimeout(() => { $modal.removeClass('flex').addClass('hidden'); $('body').removeClass('overflow-hidden'); }, 300);
         }
 
-        const parseTSV = (text) => {
-            if (!text || typeof text !== 'string') return [];
-            const [headerLine, ...lines] = text.trim().split('\n');
-            if (!headerLine) return [];
-            const headers = headerLine.split('\t').map(h => h.trim());
-            return lines.map(line => line.split('\t').reduce((obj, val, i) => (obj[headers[i]] = val.trim(), obj), {}));
-        };
-
-        // --- Theme Management ---
         function applyTheme(theme) {
             if (theme === 'dark') { $('html').addClass('dark'); } 
             else { $('html').removeClass('dark'); }
@@ -669,145 +387,136 @@
         }
         $('#theme-toggle').on('click', () => applyTheme($('html').hasClass('dark') ? 'light' : 'dark'));
 
-        // --- App Initialization & Access Control ---
+        // ฟังก์ชันถอดรหัส Base64 ภาษาไทยจาก Backend
+        function decodeBase64(base64Str) {
+            return decodeURIComponent(escape(window.atob(base64Str)));
+        }
+
         async function startApp() {
             applyTheme(localStorage.getItem('theme') || 'light');
             viewType = localStorage.getItem('viewType') || 'grid';
-            if (sessionStorage.getItem('isAuthorized') === 'true') { await loadMainContent(); return; }
-            showLoading();
-            try {
-                const res = await $.ajax({ url: getUrl('pageAccess'), dataType: 'text' });
-                pageAccessKeys = parseTSV(res);
-                hideLoading();
-                showModal('access-gate-modal');
-            } catch (error) {
-                console.error("Critical Error fetching access keys:", error);
-                showErrorMessage("ไม่สามารถโหลด Key Access ได้");
-                hideLoading();
+            
+            if (sessionStorage.getItem('authToken')) { 
+                await loadMainContent(); 
+                return; 
             }
+            
+            hideLoading();
+            showModal('access-gate-modal');
         }
-        
-        const isKeyExpired = (dateString) => {
-            if (!dateString) return false;
-            let expireDate;
-            if (dateString.includes('/')) {
-                const [day, month, year] = dateString.split('/');
-                expireDate = new Date(year, month - 1, day);
-            } else if (dateString.includes('-')) {
-                const [year, month, day] = dateString.split('-');
-                expireDate = new Date(year, month - 1, day);
-            } else {
-                expireDate = new Date(dateString);
-            }
-            if (isNaN(expireDate.getTime())) return false;
-            const invalidFromDate = new Date(expireDate);
-            invalidFromDate.setDate(invalidFromDate.getDate() + 1);
-            invalidFromDate.setHours(0, 0, 0, 0);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            return today >= invalidFromDate;
-        };
-
-        $(document).on('click', '#submit-global-key', async function() {
+        $(document).on('click', '#submit-global-key', function() {
             const enteredKey = $('#global-key-input').val().trim();
+            const $btn = $(this);
             const $msg = $('#global-key-validation-message');
+            
             if (!enteredKey) { $msg.text('กรุณาป้อน Key Access'); return; }
-            const keyData = pageAccessKeys.find(k => k.KeyAccess.toLowerCase() === enteredKey.toLowerCase());
-            if (keyData) {
-                if (isKeyExpired(keyData.ExpireDate)) { $msg.text('Key Access หมดอายุ รบกวนติดต่อผู้ดูแล'); return; }
-                $msg.text('');
-                sessionStorage.setItem('isAuthorized', 'true');
-                hideModal('access-gate-modal');
-                await loadMainContent();
-            } else { $msg.text('Key Access ไม่ถูกต้อง'); }
+            
+            $btn.prop('disabled', true).text('กำลังตรวจสอบ...');
+            $msg.text('');
+
+            $.ajax({
+                url: GAS_WEB_APP_URL,
+                data: { action: 'verifyGlobal', key: enteredKey },
+                dataType: 'jsonp',
+                success: async function(encodedResult) {
+                    try {
+                        const result = JSON.parse(decodeBase64(encodedResult));
+                        if (result.valid) {
+                            sessionStorage.setItem('authToken', btoa(enteredKey)); 
+                            hideModal('access-gate-modal');
+                            await loadMainContent();
+                        } else {
+                            $msg.text(result.message || 'Key Access ไม่ถูกต้อง');
+                            $btn.prop('disabled', false).text('เข้าสู่ระบบ');
+                        }
+                    } catch(e) {
+                        $msg.text('เกิดข้อผิดพลาดในการแปลข้อมูล');
+                        $btn.prop('disabled', false).text('เข้าสู่ระบบ');
+                    }
+                },
+                error: function(err) {
+                    $msg.text('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ตรวจสอบได้');
+                    console.error("Auth Error:", err);
+                    $btn.prop('disabled', false).text('เข้าสู่ระบบ');
+                }
+            });
         });
+
         $(document).on('keypress', '#global-key-input', e => { if (e.which === 13) $('#submit-global-key').click(); });
 
-        async function loadMainContent() {
+        function loadMainContent() {
             showLoading();
             $('#app-header, #app-main, #app-footer').removeClass('hidden');
-            try {
-                const results = await Promise.allSettled([
-                    $.ajax({ url: getUrl('courses'), dataType: 'text' }),
-                    $.ajax({ url: getUrl('videoParts'), dataType: 'text' }),
-                    $.ajax({ url: getUrl('keys'), dataType: 'text' }),
-                    $.ajax({ url: getUrl('resources'), dataType: 'text' })
-                ]);
+            
+            $.ajax({
+                url: GAS_WEB_APP_URL,
+                data: { action: 'getCourseData' },
+                dataType: 'jsonp',
+                success: function(encodedResult) {
+                    try {
+                        const result = JSON.parse(decodeBase64(encodedResult));
+                        
+                        if (result.valid) {
+                            const rawCourses = result.courses || [];
+                            const allVideoParts = result.videoParts || [];
+                            const rawResources = result.resources || [];
 
-                const successfulResults = results.map((result, index) => {
-                    if (result.status === 'rejected') {
-                        const sheetNames = ['courses', 'videoParts', 'keys', 'resources'];
-                        throw new Error(`ไม่สามารถโหลดข้อมูล '${sheetNames[index]}' ได้`);
+                            const resourcesByPartId = rawResources.reduce((acc, res) => { 
+                                (acc[res.partId] = acc[res.partId] || []).push(res); 
+                                return acc; 
+                            }, {});
+                            
+                            allCourses = rawCourses.map(course => {
+                                const courseVideoParts = allVideoParts.filter(p => p.courseId == course.id).map(p => ({ ...p, title: p.partTitle, resources: resourcesByPartId[p.partId] || [] }));
+                                const firstLockedPart = courseVideoParts.find(p => p.keyId);
+                                return { ...course, videoParts: courseVideoParts, courseKeyId: firstLockedPart ? firstLockedPart.keyId : null };
+                            });
+
+                            const categories = [...new Set(allCourses.flatMap(c => c.category ? c.category.split(',').map(cat => cat.trim()) : []).filter(Boolean))];
+                            const $categoryOptions = $('#custom-category-filter .custom-dropdown-options');
+                            $categoryOptions.empty();
+                            $categoryOptions.append('<li data-value="all" class="selected">ทั้งหมด</li>');
+                            categories.forEach(category => {
+                                $categoryOptions.append(`<li data-value="${category}">${category}</li>`);
+                            });
+                            
+                            $('#custom-items-per-page').data('value', 'all');
+                            $('#custom-items-per-page .custom-select-trigger span').text('ทั้งหมด');
+                            $('#custom-items-per-page .custom-dropdown-options li[data-value="all"]').addClass('selected');
+
+                            filteredCourses = [...allCourses];
+                            renderCourses();
+                            $('#course-list-section').css('opacity', 1);
+                        } else {
+                            showErrorMessage(result.message || "โหลดข้อมูลไม่สำเร็จ");
+                        }
+                    } catch(e) {
+                        showErrorMessage("รูปแบบข้อมูลผิดพลาด");
                     }
-                    return result.value;
-                });
-
-                const [coursesRes, partsRes, keysRes, resourcesRes] = successfulResults;
-
-                const rawCourses = parseTSV(coursesRes), allVideoParts = parseTSV(partsRes), rawKeys = parseTSV(keysRes), rawResources = parseTSV(resourcesRes || "");
-                const resourcesByPartId = rawResources ? rawResources.reduce((acc, res) => { (acc[res.partId] = acc[res.partId] || []).push(res); return acc; }, {}) : {};
-                
-                allKeys = rawKeys.reduce((acc, key) => {
-                    if (key.keyId && key.keyValue) {
-                        if (!acc[key.keyId]) acc[key.keyId] = [];
-                        acc[key.keyId].push({ value: key.keyValue, expireDate: key.ExpireDate || null });
-                    }
-                    return acc;
-                }, {});
-
-                allCourses = rawCourses.map(course => {
-                    const courseVideoParts = allVideoParts.filter(p => p.courseId === course.id).map(p => ({ ...p, title: p.partTitle, resources: resourcesByPartId[p.partId] || [] }));
-                    const firstLockedPart = courseVideoParts.find(p => p.keyId);
-                    return { ...course, videoParts: courseVideoParts, courseKeyId: firstLockedPart ? firstLockedPart.keyId : null };
-                });
-
-                const categories = [...new Set(allCourses.flatMap(c => c.category ? c.category.split(',').map(cat => cat.trim()) : []).filter(Boolean))];
-                const $categoryOptions = $('#custom-category-filter .custom-dropdown-options');
-                $categoryOptions.empty();
-                $categoryOptions.append('<li data-value="all" class="selected">ทั้งหมด</li>');
-                categories.forEach(category => {
-                    $categoryOptions.append(`<li data-value="${category}">${category}</li>`);
-                });
-                
-                $('#custom-items-per-page').data('value', 'all');
-                $('#custom-items-per-page .custom-select-trigger span').text('ทั้งหมด');
-                $('#custom-items-per-page .custom-dropdown-options li[data-value="all"]').addClass('selected');
-
-                filteredCourses = [...allCourses];
-                renderCourses();
-                $('#course-list-section').css('opacity', 1);
-            } catch (error) {
-                console.error("Error fetching main content:", error);
-                showErrorMessage(error.message || "ไม่สามารถโหลดข้อมูลหลักสูตรได้");
-            } finally {
-                hideLoading();
-                lucide.createIcons();
-            }
+                    hideLoading();
+                    lucide.createIcons();
+                },
+                error: function(err) {
+                    console.error("Error fetching main content:", err);
+                    showErrorMessage("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เพื่อโหลดข้อมูลหลักสูตรได้");
+                    hideLoading();
+                }
+            });
         }
         
         $('#logout-button').on('click', () => { sessionStorage.clear(); localStorage.clear(); location.reload(); });
         
-        // Support Modal Logic
-        $('#support-button').on('click', () => {
-             showModal('support-modal')
-             lucide.createIcons();
-        });
+        $('#support-button').on('click', () => { showModal('support-modal'); lucide.createIcons(); });
         $(document).on('click', '#close-support-modal', () => hideModal('support-modal'));
-        $(document).on('click', '#support-modal', function(e) {
-            if ($(e.target).is('#support-modal')) {
-                hideModal('support-modal');
-            }
-        });
+        $(document).on('click', '#support-modal', function(e) { if ($(e.target).is('#support-modal')) { hideModal('support-modal'); } });
 
         $(document).on('click', '.support-tab', function() {
             const tabId = $(this).data('tab');
             $('.support-tab').removeClass('active');
             $(this).addClass('active');
-
             $('.support-tab-content').addClass('hidden');
             $('#tab-' + tabId).removeClass('hidden');
         });
-
 
         function initCustomDropdowns() {
             $(document).on('click', function(e) {
@@ -869,7 +578,6 @@
             });
         }
 
-        // --- Course Rendering, Filtering, Pagination ---
         function applyFiltersAndRender() {
             const searchTerm = $('#search-input').val().toLowerCase();
             const selectedCategory = $('#custom-category-filter').data('value') || 'all';
@@ -889,7 +597,7 @@
             if (filteredCourses.length === 0) {
                 $('#no-results-message').removeClass('hidden');
                 $('#pagination-controls').addClass('hidden');
-                $container.removeClass('grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 space-y-3');
+                $container.removeClass('grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 space-y-3');
                 return;
             }
             $('#no-results-message').addClass('hidden');
@@ -899,9 +607,7 @@
             currentPage = Math.max(1, Math.min(currentPage, totalPages));
             const paginatedItems = itemsPerPage === 'all' ? filteredCourses : filteredCourses.slice((currentPage - 1) * perPage, currentPage * perPage);
 
-
             if (viewType === 'grid') {
-                // MODIFIED: Changed grid columns for better responsiveness
                 $container.removeClass('space-y-3').addClass('grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6');
                 paginatedItems.forEach(course => $container.append(createCourseGridCard(course)));
             } else {
@@ -914,7 +620,6 @@
         }
         
         const getTagColorClasses = (index) => {
-            // MODIFIED: Increased tag color intensity
             const colors = [
                 { light: 'bg-sky-200 text-sky-800 ', dark: 'dark:bg-red-500 dark:text-white' },
                 { light: 'bg-amber-200 text-amber-800', dark: 'dark:bg-sky-500 dark:text-white' },
@@ -930,7 +635,6 @@
         const createTagsHTML = (categoryString) => {
             if (!categoryString) return '';
             const tags = categoryString.split(',').map(tag => tag.trim());
-            // MODIFIED: Added icon, reduced size, and adjusted layout for tags.
             return `<div class="mb-3 flex flex-wrap gap-1.5">
                 ${tags.map((tag, index) => `<span class="inline-flex items-center text-xs font-semibold ${getTagColorClasses(index)} px-1.5 py-0.5 rounded-full" title="${tag}"><i data-lucide="tag" class="w-3 h-3 mr-1 flex-shrink-0"></i><span class="truncate">${tag}</span></span>`).join('')}
             </div>`;
@@ -952,12 +656,10 @@
                     <h3 class="text-md font-bold mb-1 line-clamp-2 h-12">${course.title}</h3>
                     <p class="text-sm text-[var(--text-secondary)] line-clamp-2 mb-3 h-10">${course.description || 'ไม่มีคำอธิบาย'}</p>
                     ${createTagsHTML(course.category)}
-                    <div class="flex-grow"></div> <!-- Spacer -->
-                    <!-- Progress Bar -->
+                    <div class="flex-grow"></div>
                     <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 progress-bar-container mb-1">
                         <div class="progress-bar-fill" style="width: ${percentage}%"></div>
                     </div>
-                    <!-- MODIFIED: Moved lesson count under progress bar -->
                     <div class="flex justify-between items-center text-xs text-[var(--text-secondary)] font-medium mb-4">
                         <span class="flex items-center">
                             <i data-lucide="book-copy" class="w-4 h-4 mr-1.5"></i>
@@ -988,13 +690,11 @@
                     <h3 class="text-md font-bold mb-1 line-clamp-1">${course.title}</h3>
                     <p class="text-xs text-[var(--text-secondary)] line-clamp-1 mb-2">${course.description || 'ไม่มีคำอธิบาย'}</p>
                     ${createTagsHTML(course.category)}
-                    <div class="flex-grow"></div> <!-- Spacer -->
-                    <!-- Progress Bar -->
+                    <div class="flex-grow"></div>
                     <div class="mt-auto pt-2">
                         <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 progress-bar-container mb-1">
                             <div class="progress-bar-fill" style="width: ${percentage}%"></div>
                         </div>
-                        <!-- MODIFIED: Moved lesson count under progress bar for consistency -->
                         <div class="flex justify-between items-center text-xs text-[var(--text-secondary)] font-medium">
                             <span class="flex items-center">
                                 <i data-lucide="book-copy" class="w-4 h-4 mr-1.5"></i>
@@ -1007,7 +707,6 @@
             </div>`;
         }
 
-
         function updatePaginationControls(totalItems, totalPages) {
             const $pagination = $('#pagination-controls').empty();
             if (itemsPerPage === 'all' || totalItems === 0 || totalPages <= 1) {
@@ -1015,7 +714,7 @@
                 return;
             }
             $pagination.removeClass('hidden');
-            $pagination.html(`<button id="prev-page" class="px-4 py-2 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--primary)] hover:text-white transition-all">&lt; ก่อนหน้า</button><span id="page-info" class="text-sm font-medium">หน้า ${currentPage} จาก ${totalPages}</span><button id="next-page" class="px-4 py-2 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--primary)] hover:text-white transition-all">ต่อไป &gt;</button>`);
+            $pagination.html(`<button id="prev-page" class="px-4 py-2 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--primary)] hover:text-white transition-all">< ก่อนหน้า</button><span id="page-info" class="text-sm font-medium">หน้า ${currentPage} จาก ${totalPages}</span><button id="next-page" class="px-4 py-2 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--primary)] hover:text-white transition-all">ต่อไป ></button>`);
             $('#prev-page').prop('disabled', currentPage === 1);
             $('#next-page').prop('disabled', currentPage === totalPages);
         }
@@ -1031,7 +730,7 @@
         
         $(document).on('click', '#next-page', () => { 
             const perPage = itemsPerPage === 'all' ? filteredCourses.length : parseInt(itemsPerPage, 10);
-            if (!perPage) return; // Guard against 0 or NaN
+            if (!perPage) return;
             const totalPages = Math.ceil(filteredCourses.length / perPage);
             if (currentPage < totalPages) { 
                 currentPage++; 
@@ -1039,8 +738,7 @@
             } 
         });
 
-        // --- Course Detail & Progress Tracking ---
-        $(document).on('click', '[data-course-id]', function() { selectedCourseData = allCourses.find(c => c.id === $(this).data('course-id').toString()); if (selectedCourseData) showCourseDetail(selectedCourseData); });
+        $(document).on('click', '[data-course-id]', function() { selectedCourseData = allCourses.find(c => c.id == $(this).data('course-id')); if (selectedCourseData) showCourseDetail(selectedCourseData); });
 
         function showCourseDetail(course) {
             $('#course-list-section').css('opacity', 0).addClass('hidden');
@@ -1189,7 +887,7 @@
         $('#back-to-courses, #home-button').on('click', () => {
             $('#course-detail-section').css('opacity', 0).addClass('hidden');
             $('#course-list-section').removeClass('hidden').css('opacity', 1);
-            renderCourses(); // Re-render to update progress bars
+            renderCourses();
             if (youtubePlayer) { youtubePlayer.destroy(); youtubePlayer = null; }
             $('#youtube-player-container').empty();
             $('#player-placeholder').show();
@@ -1225,38 +923,48 @@
 
         $(document).on('click', '#submit-key-input', function() {
             const enteredKey = $('#key-input').val().trim();
+            const $btn = $(this);
             const $msg = $('#key-validation-message');
+            
             if (!enteredKey) { $msg.text('กรุณาป้อนคีย์'); return; }
             if (!selectedCourseData) { $msg.text('เกิดข้อผิดพลาด: ไม่ได้เลือกหลักสูตร'); return; }
             
-            const courseKeys = allKeys[selectedCourseData.courseKeyId];
-            if (!courseKeys || courseKeys.length === 0) {
-                $msg.text('ไม่พบข้อมูลคีย์สำหรับหลักสูตรนี้');
-                showMessageBox('ไม่พบข้อมูลคีย์', 'error');
-                return;
-            }
+            $btn.prop('disabled', true).text('กำลังตรวจสอบ...');
+            $msg.text('');
 
-            const validKeyData = courseKeys.find(key => key.value.toLowerCase() === enteredKey.toLowerCase());
-
-            if (validKeyData) {
-                if (isKeyExpired(validKeyData.expireDate)) {
-                    $msg.text('Key หมดอายุแล้ว');
-                    showMessageBox('Key หมดอายุแล้ว', 'error');
-                } else {
-                    localStorage.setItem(`unlocked_course_${selectedCourseData.id}`, 'true');
-                    $msg.text('');
-                    hideModal('key-modal');
-                    showMessageBox('ปลดล็อกหลักสูตรสำเร็จ!', 'success');
-                    renderVideoPartsList(selectedCourseData);
-                    if (currentVideoPartToPlay) {
-                        const partIndex = selectedCourseData.videoParts.indexOf(currentVideoPartToPlay);
-                        playYouTubeVideo(currentVideoPartToPlay.videoId, partIndex, true);
+            $.ajax({
+                url: GAS_WEB_APP_URL,
+                data: { action: 'verifyCourse', keyId: selectedCourseData.courseKeyId, key: enteredKey },
+                dataType: 'jsonp',
+                success: function(encodedResult) {
+                    try {
+                        const result = JSON.parse(decodeBase64(encodedResult));
+                        if (result.valid) {
+                            localStorage.setItem(`unlocked_course_${selectedCourseData.id}`, 'true');
+                            $msg.text('');
+                            hideModal('key-modal');
+                            showMessageBox('ปลดล็อกหลักสูตรสำเร็จ!', 'success');
+                            renderVideoPartsList(selectedCourseData);
+                            
+                            if (currentVideoPartToPlay) {
+                                const partIndex = selectedCourseData.videoParts.indexOf(currentVideoPartToPlay);
+                                playYouTubeVideo(currentVideoPartToPlay.videoId, partIndex, true);
+                            }
+                        } else {
+                            $msg.text(result.message || 'คีย์ไม่ถูกต้อง');
+                            showMessageBox(result.message || 'คีย์ไม่ถูกต้อง', 'error');
+                        }
+                    } catch(e) {
+                        $msg.text('เกิดข้อผิดพลาดในการแปลข้อมูล');
                     }
+                    $btn.prop('disabled', false).text('ยืนยัน');
+                },
+                error: function(err) {
+                    $msg.text('ไม่สามารถตรวจสอบคีย์กับเซิร์ฟเวอร์ได้');
+                    console.error("Course Key Verify Error:", err);
+                    $btn.prop('disabled', false).text('ยืนยัน');
                 }
-            } else {
-                $msg.text('คีย์ไม่ถูกต้อง');
-                showMessageBox('คีย์ไม่ถูกต้อง', 'error');
-            }
+            });
         });
         
         $(document).on('keypress', '#key-input', e => { if (e.which === 13) $('#submit-key-input').click(); });
@@ -1299,19 +1007,13 @@
             }
         });
 
-        // --- YouTube Player ---
         function playYouTubeVideo(videoId, partIndex, isUserClick = false) {
             const part = selectedCourseData.videoParts[partIndex];
             const hasVideo = videoId && videoId.trim() !== '';
 
             if (!hasVideo) {
-                if (isUserClick) {
-                    saveProgress(selectedCourseData.id, partIndex);
-                }
-                if (youtubePlayer) {
-                    youtubePlayer.destroy();
-                    youtubePlayer = null;
-                }
+                if (isUserClick) { saveProgress(selectedCourseData.id, partIndex); }
+                if (youtubePlayer) { youtubePlayer.destroy(); youtubePlayer = null; }
                 $('#youtube-player-container').empty();
                 $('#player-placeholder').hide();
                 $('#resource-placeholder').removeClass('hidden').addClass('flex');
@@ -1323,10 +1025,7 @@
             currentPlayingIndex = partIndex;
             updatePlayingHighlight();
 
-            if (youtubePlayer) {
-                youtubePlayer.destroy();
-                youtubePlayer = null;
-            }
+            if (youtubePlayer) { youtubePlayer.destroy(); youtubePlayer = null; }
             $('#youtube-player-container').empty();
             
             $('#player-placeholder').hide();
@@ -1380,7 +1079,12 @@
             lucide.createIcons(); 
             initCustomDropdowns();
         });
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            if(e.keyCode == 123) { e.preventDefault(); return false; } // บล็อก F12
+            if(e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) { e.preventDefault(); return false; } // บล็อก Ctrl+Shift+I, J, C
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { e.preventDefault(); return false; } // บล็อก Ctrl+U (View Source)
+        });
     </script>
 </body>
 </html>
-
