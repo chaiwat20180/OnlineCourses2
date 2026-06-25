@@ -1,3 +1,36 @@
+Skip to content
+chaiwat20180
+OnlineCourses2
+Repository navigation
+Code
+Issues
+Pull requests
+Agents
+Actions
+Projects
+Wiki
+Security and quality
+Insights
+Settings
+Files
+Go to file
+t
+T
+.github
+index.html
+OnlineCourses2
+/index.html
+chaiwat20180
+chaiwat20180
+Update index.html
+aea76c2
+ · 
+13 minutes ago
+
+Code
+
+Blame
+1090 lines (960 loc) · 73.7 KB
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -396,7 +429,7 @@
             applyTheme(localStorage.getItem('theme') || 'light');
             viewType = localStorage.getItem('viewType') || 'grid';
             
-            if (sessionStorage.getItem('authToken')) { 
+            if (sessionStorage.getItem('authKey')) { 
                 await loadMainContent(); 
                 return; 
             }
@@ -422,7 +455,7 @@
                     try {
                         const result = JSON.parse(decodeBase64(encodedResult));
                         if (result.valid) {
-                            sessionStorage.setItem('authToken', btoa(enteredKey)); 
+                            sessionStorage.setItem('authKey', btoa(enteredKey));
                             hideModal('access-gate-modal');
                             await loadMainContent();
                         } else {
@@ -448,9 +481,24 @@
             showLoading();
             $('#app-header, #app-main, #app-footer').removeClass('hidden');
             
+            const authKeyEncoded = sessionStorage.getItem('authKey');
+            let authKey = '';
+            try {
+                authKey = authKeyEncoded ? atob(authKeyEncoded) : '';
+            } catch (e) {
+                authKey = '';
+            }
+            if (!authKey) {
+                hideLoading();
+                sessionStorage.removeItem('authKey');
+                sessionStorage.removeItem('authToken');
+                showModal('access-gate-modal');
+                return;
+            }
+            
             $.ajax({
                 url: GAS_WEB_APP_URL,
-                data: { action: 'getCourseData' },
+                data: { action: 'getCourseData', key: authKey },
                 dataType: 'jsonp',
                 success: function(encodedResult) {
                     try {
@@ -488,10 +536,20 @@
                             renderCourses();
                             $('#course-list-section').css('opacity', 1);
                         } else {
+                            sessionStorage.removeItem('authKey');
+                            $('#app-header, #app-main, #app-footer').addClass('hidden');
+                            hideLoading();
+                            showModal('access-gate-modal');
                             showErrorMessage(result.message || "โหลดข้อมูลไม่สำเร็จ");
+                            return;
                         }
                     } catch(e) {
+                        sessionStorage.removeItem('authKey');
+                        $('#app-header, #app-main, #app-footer').addClass('hidden');
+                        hideLoading();
+                        showModal('access-gate-modal');
                         showErrorMessage("รูปแบบข้อมูลผิดพลาด");
+                        return;
                     }
                     hideLoading();
                     lucide.createIcons();
@@ -1088,3 +1146,4 @@
     </script>
 </body>
 </html>
+ 
