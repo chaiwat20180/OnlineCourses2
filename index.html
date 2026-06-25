@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramune | Online Courses</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- jQuery CDN -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        :root {
+            --background: #f8fafc;      /* slate-50 */
+            --text-primary: #575e69;     /* slate-800 */
+            --text-secondary: #64748b;   /* slate-500 */
+            --card-bg: #ffffff;          /* white */
+            --border-color: #e2e8f0;     /* slate-200 */
+            --input-bg: #f1f5f9;         /* slate-100 */
+            --primary: #4f46e5;          /* indigo-600 */
+            --primary-hover: #4338ca;    /* indigo-700 */
+            --secondary: #14b8a6;        /* teal-500 */
+            --accent: #ec4899;           /* pink-500 */
+            --subtle-hover-bg: #f1f5f9;   /* slate-100 */
+            --chapter-header-bg: #eff6ff; /* blue-50 */
+            --selected-bg: #2f2b7769;    /* slate-900 */
+        }
+        
+        html.dark {
+            --background: #0f172a;       /* slate-900 */
+            --text-primary: #e2e8f0;     /* slate-200 */
+            --text-secondary: #94a3b8;   /* slate-400 */
+            --card-bg: #1e293b;          /* slate-800 */
+            --border-color: #334155;     /* slate-700 */
+            --input-bg: #334155;         /* slate-700 */
+            --subtle-hover-bg: #334155;   /* slate-700 */
+            --chapter-header-bg: #1e293b; /* slate-800 */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+        .selected-lesson .video-trigger {
+             background-color: #dbeafe !important; /* blue-100 */
+             color: var(--text-primary);
+        }
+        
+        .playing .video-trigger {
+            background-color: var(--primary) !important;
+            color: white;
+            box-shadow: 0 4px 14px 0 rgb(79 70 229 / 39%);
+        }
+
+        html.dark .selected-lesson .video-trigger {
+            background-color: #1e3a8a !important; /* blue-900 */
+            color: var(--text-primary);
+        }
+
+        html.dark .playing .video-trigger {
+             background-color: var(--primary-hover) !important;
+        }
+
+        .playing .lesson-number, .selected-lesson .lesson-number {
+            background: white !important;
+            color: var(--primary) !important;
+        }
+
+        .video-aspect-ratio {
+            position: relative; width: 100%; padding-bottom: 56.25%;
+            height: 0; overflow: hidden; border-radius: 1rem;
+        }
+        .video-aspect-ratio iframe, .video-aspect-ratio .player-placeholder {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
+
+        /* Modern Loader */
+        .loader {
+            height: 48px;
+            width: 48px;
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        .loader::after {
+            content: '';  
+            box-sizing: border-box;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 3px solid;
+            border-color: var(--secondary) transparent;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Custom Searchable Dropdown */
+        .custom-dropdown-container {
+            min-width: 150px;
+        }
+        .custom-select-trigger {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px; /* pill shape */
+            padding: 0.65rem 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .custom-select-trigger:focus, .custom-select-trigger.open {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79 70 229, 0.2);
+        }
+        .custom-select-trigger span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .custom-select-trigger i {
+            width: 1.25em;
+            height: 1.25em;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+        .custom-select-trigger.open i {
+            transform: rotate(180deg);
+        }
+
+        .custom-dropdown-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            width: 100%;
+            max-height: 250px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            z-index: 50;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .custom-dropdown-search-wrapper {
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .custom-dropdown-search {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+        .custom-dropdown-search:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(79 70 229, 0.2);
+        }
+
+        .custom-dropdown-options {
+            list-style: none;
+            padding: 0.5rem;
+            margin: 0;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .custom-dropdown-options li {
+            padding: 1rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 5px;
+        }
+        .custom-dropdown-options li:hover, .custom-dropdown-options li.selected {
+            background-color: var(--selected-bg);
+            color: white;
+        }
+        .custom-dropdown-options li.hidden {
+            display: none;
+        }
+        
+        /* Chapter Dropdown Styles */
+        details.chapter-accordion summary { list-style: none; cursor: pointer; background-color: var(--chapter-header-bg); }
+        details.chapter-accordion summary::-webkit-details-marker { display: none; }
+        details.chapter-accordion summary .chapter-arrow { transition: transform 0.2s; }
+        details.chapter-accordion[open] > summary .chapter-arrow { transform: rotate(90deg); }
+
+        /* Custom hover style to avoid Tailwind class conflicts */
+        .custom-subtle-hover:hover {
+            background-color: var(--subtle-hover-bg);
+        }
+
+        /* Resource Button Styling */
+        .resource-toggle {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        .resource-toggle:hover, .resource-toggle:focus-visible {
+            background-color: var(--subtle-hover-bg);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px 0 rgb(79 70 229 / 20%);
+            outline: none;
+        }
+        html.dark .resource-toggle:hover, html.dark .resource-toggle:focus-visible {
+            background-color: #334155;
+            border-color: #818cf8;
+            color: #818cf8;
+        }
+        .resource-toggle.active {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            transform: translateY(0);
+            box-shadow: 0 4px 14px 0 rgb(79 70 229 / 39%);
+        }
+        html.dark .resource-toggle.active {
+            background-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgb(79 70 229 / 30%);
+        }
+
+        /* Animated Progress Bar */
+        .progress-bar-container {
+            overflow: hidden;
+            border-radius: 9999px;
+        }
+        .progress-bar-fill {
+            background-color: #3b82f6; /* blue-500 */
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.5s ease-in-out;
+        }
+        .progress-bar-fill::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-image: linear-gradient(
+                -45deg, 
+                rgba(255, 255, 255, .2) 25%, 
+                transparent 25%, 
+                transparent 50%, 
+                rgba(255, 255, 255, .2) 50%, 
+                rgba(255, 255, 255, .2) 75%, 
+                transparent 75%, 
+                transparent
+            );
+            z-index: 1;
+            background-size: 50px 50px;
+            animation: moveWaves 2s linear infinite;
+        }
+        #progress-bar { /* For course detail page */
+            background-color: #3b82f6; /* blue-500 */
+            position: relative;
+            overflow: hidden;
+        }
+         #progress-bar::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-image: linear-gradient(
+                -45deg, 
+                rgba(255, 255, 255, .2) 25%, 
+                transparent 25%, 
+                transparent 50%, 
+                rgba(255, 255, 255, .2) 50%, 
+                rgba(255, 255, 255, .2) 75%, 
+                transparent 75%, 
+                transparent
+            );
+            z-index: 1;
+            background-size: 50px 50px;
+            animation: moveWaves 2s linear infinite;
+        }
+        @keyframes moveWaves {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
+        }
+
+        /* Support Modal Tabs */
+        .support-tab {
+            border-bottom: 3px solid transparent;
+            color: var(--text-secondary);
+        }
+        .support-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 flex items-center justify-center bg-[var(--background)] z-[100] transition-opacity duration-500">
+        <div class="text-center">
+            <span class="loader"></span>
+            <p class="mt-6 text-lg font-medium text-[var(--text-secondary)]">กำลังโหลดข้อมูล...</p>
+        </div>
+    </div>
+
+    <!-- Error Message Display -->
+    <div id="error-message" class="hidden fixed inset-0 flex items-center justify-center bg-red-100/80 backdrop-blur-sm text-red-800 p-4 z-[100]">
+        <div class="bg-white p-8 rounded-2xl shadow-xl text-center border border-red-200">
+            <i data-lucide="alert-circle" class="w-16 h-16 text-red-500 mx-auto mb-4"></i>
+            <p class="text-xl font-semibold"></p>
+        </div>
+    </div>
+
+    <!-- Global Access Key Gate Modal -->
+    <div id="access-gate-modal" class="fixed inset-0 hidden items-center justify-center z-50 bg-slate-900/80 backdrop-blur-sm p-4">
+        <div class="bg-[var(--card-bg)] rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-md border border-[var(--border-color)] transform transition-all duration-300 scale-95 opacity-0">
+            <h3 class="text-2xl font-bold mb-2 text-center">ยินดีต้อนรับสู่ <span class="bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]">Ramune</span></h3>
+            <p class="text-[var(--text-secondary)] mb-6 text-center">โปรดป้อนคีย์การเข้าถึงเพื่อเข้าสู่ระบบ</p>
+            <input type="password" id="global-key-input" class="w-full p-3 border border-[var(--border-color)] rounded-lg mb-2 bg-[var(--input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all" placeholder="Key Access" />
+            <p id="global-key-validation-message" class="text-red-500 text-sm mb-4 h-5"></p>
+            <button id="submit-global-key" class="w-full px-5 py-3 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white rounded-full font-semibold transition-all duration-300 shadow-lg shadow-indigo-500/30 transform hover:scale-105">เข้าสู่ระบบ</button>
+        </div>
+    </div>
+    
+    <!-- Support Modal -->
+    <div id="support-modal" class="fixed inset-0 hidden items-center justify-center z-50 bg-slate-900/80 backdrop-blur-sm p-4">
+        <div class="bg-[var(--card-bg)] rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-md border border-[var(--border-color)] transform transition-all duration-300 scale-95 opacity-0 relative">
+            <button id="close-support-modal" class="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-2xl font-bold mb-2 text-center">สนับสนุนผู้พัฒนา</h3>
+            <p class="text-[var(--text-secondary)] mb-4 text-center">ขอบคุณสำหรับทุกการสนับสนุนครับ!</p>
+            
+            <!-- Tabs Navigation -->
+            <div class="flex border-b border-[var(--border-color)] mb-4">
+                <button class="support-tab flex-1 py-2 font-semibold transition-colors active" data-tab="promptpay">
+                    <span class="flex items-center justify-center"><i data-lucide="smartphone" class="w-4 h-4 mr-2"></i>PromptPay</span>
+                </button>
+                <button class="support-tab flex-1 py-2 font-semibold transition-colors" data-tab="truemoney">
+                     <span class="flex items-center justify-center"><i data-lucide="wallet" class="w-4 h-4 mr-2"></i>TrueMoney</span>
+                </button>
+                <button class="support-tab flex-1 py-2 font-semibold transition-colors" data-tab="bank">
+                     <span class="flex items-center justify-center"><i data-lucide="landmark" class="w-4 h-4 mr-2"></i>Bank</span>
+                </button>
+            </div>
+
+            <!-- Tabs Content -->
+            <div class="text-center border-b border-[var(--border-color)]">
+                <div id="tab-promptpay" class="support-tab-content space-y-3 mb-5">
+                    <img src="https://promptpay.io/0959394524.png" alt="QR Code for PromptPay" class="mx-auto rounded-lg border-4 border-[var(--border-color)] w-64 h-64">
+                    <p class="text-md text-[var(--text-secondary)]">เบอร์: 095-939-4524</p>
+                    <p class="text-md text-[var(--text-secondary)]">ชื่อบัญชี: นาย ไชยวัฒน์ ขวัญทา</p>
+                </div>
+                <div id="tab-truemoney" class="support-tab-content hidden space-y-3 mb-5">
+                    <img src="https://i.postimg.cc/7Pp6r0DW/Screenshot-2025-09-17-083922.png" alt="QR Code for TrueMoney" class="mx-auto rounded-lg border-4 border-[var(--border-color)] w-64 h-64">
+                     <p class="text-md text-[var(--text-secondary)]">เบอร์: 095-939-4524</p>
+                     <p class="text-md text-[var(--text-secondary)]">ชื่อบัญชี: นาย ไชยวัฒน์ ขวัญทา</p>
+                </div>
+                <div id="tab-bank" class="support-tab-content hidden space-y-4 mb-5">
+                    <!-- Kasikorn Bank -->
+                    <div class="flex items-center justify-between bg-[var(--input-bg)] p-4 rounded-lg border border-[var(--border-color)]">
+                        <div class="space-y-1 text-left">
+                            <p class="font-bold text-lg text-green-600">ธนาคารกสิกรไทย</p>
+                            <p class="text-sm"><span class="font-semibold">ชื่อบัญชี:</span> <span class="font-mono">นาย ไชยวัฒน์ ขวัญทา</span></p>
+                            <p class="text-sm"><span class="font-semibold">เลขบัญชี:</span> <span class="font-mono">022-8-53333-5</span></p>
+                        </div>
+                        <img src="https://www.dpa.or.th/storage/uploads/bank/dpa_bank_kbank@2x.png" alt="KBank Logo" class="w-12 h-12 object-contain">
+                    </div>
+                    <!-- SCB Bank -->
+                    <div class="flex items-center justify-between bg-[var(--input-bg)] p-4 rounded-lg border border-[var(--border-color)]">
+                        <div class="space-y-1 text-left">
+                            <p class="font-bold text-lg text-purple-600">ธนาคารไทยพาณิชย์</p>
+                            <p class="text-sm"><span class="font-semibold">ชื่อบัญชี:</span> <span class="font-mono">นาย ไชยวัฒน์ ขวัญทา</span></p>
+                            <p class="text-sm"><span class="font-semibold">เลขบัญชี:</span> <span class="font-mono">653-422680-7</span></p>
+                        </div>
+                        <img src="https://play-lh.googleusercontent.com/j-9a3HbVZoX337-MLdkmYt75yUfN5ahis8rOnE09972cFLdVn7Z5Dzu3Guo8ldUv2H4x" alt="SCB Logo" class="w-12 h-12 object-contain">
+                    </div>
+                    <div class="flex items-center justify-between bg-[var(--input-bg)] p-4 rounded-lg border border-[var(--border-color)]">
+                        <div class="space-y-1 text-left">
+                            <p class="font-bold text-lg text-pink-500">ธนาคารกรุงศรี</p>
+                            <p class="text-sm"><span class="font-semibold">ชื่อบัญชี:</span> <span class="font-mono">นาย ไชยวัฒน์ ขวัญทา</span></p>
+                            <p class="text-sm"><span class="font-semibold">เลขบัญชี:</span> <span class="font-mono">004-7-26617-9</span></p>
+                        </div>
+                        <img src="https://www.dpa.or.th/storage/uploads/bank/dpa_bank_krungsri@2x.png" alt="krungsri Logo" class="w-12 h-12 object-contain">
+                    </div>
+                    <!-- GSB Bank -->
+                     <!-- <div class="flex items-center justify-between bg-[var(--input-bg)] p-4 rounded-lg border border-[var(--border-color)]">
+                        <div class="space-y-1 text-left">
+                            <p class="font-bold text-lg text-pink-500">ธนาคารออมสิน</p>
+                            <p class="text-sm"><span class="font-semibold">ชื่อบัญชี:</span> <span class="font-mono">นาย</span></p>
+                            <p class="text-sm"><span class="font-semibold">เลขบัญชี:</span> <span class="font-mono"></span></p>
+                        </div>
+                        <img src="https://i.postimg.cc/pX05M53v/gsb-logo.png" alt="GSB Logo" class="w-12 h-12 object-contain">
+                    </div> -->
+                </div>
+            </div>
+            <div class="text-center px-4 mt-5">
+                <p class="text-sm text-[var(--text-secondary)]">ขอบคุณสำหรับการสนับสนุนเว็บนะครับ! ทุกการสนับสนุนจะถูกนำไปพัฒนาและเพิ่มคอร์สเรียนฟรีต่างๆในอนาคต 😊</p>
+            </div>
+            <div class="text-center">
+                <button id="close-support-modal" class="w-48 mx-auto  mt-4 px-5 py-3 bg-red-500 hover:bg-red-600 text-white rounded-full font-semibold transition-all duration-300 shadow-lg shadow-red-500/30 transform hover:scale-105 ">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Header -->
+    <header id="app-header" class="hidden sticky top-0 z-40 bg-[var(--background)]/80 backdrop-blur-lg border-b border-[var(--border-color)] transition-all duration-300">
+        <div class="container mx-auto flex justify-between items-center p-4">
+            <h1 id="home-button" class="text-2xl font-extrabold cursor-pointer transition-transform hover:scale-105">
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]">Ramune</span>
+            </h1>
+            <div class="flex items-center space-x-2">
+                <button id="theme-toggle" class="p-2 rounded-full custom-subtle-hover transition-colors">
+                    <i data-lucide="sun" class="h-5 w-5 block dark:hidden"></i>
+                    <i data-lucide="moon" class="h-5 w-5 hidden dark:block"></i>
+                </button>
+                <button id="support-button" class="flex items-center space-x-2 bg-green-600 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="hidden sm:inline">สนับสนุน</span>
+                </button>
+                <button id="logout-button" class="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                    <span class="hidden sm:inline">ออกจากระบบ</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="app-main" class="hidden flex-grow container mx-auto p-4 md:p-8">
+        <section id="course-list-section" class="py-8 transition-opacity duration-500 opacity-0">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-2">หลักสูตรทั้งหมด</h1>
+                <p class="text-lg text-[var(--text-secondary)]">เลือกหลักสูตรที่คุณสนใจเพื่อเริ่มเรียนรู้ได้เลย</p>
+            </div>
+
+            <!-- UPDATED: Responsive Filter Bar -->
+            <div class="flex flex-wrap md:flex-wrap-reverse justify-between items-center mb-8 lg:space-x-2  p-4 bg-[var(--card-bg)] rounded-2xl border border-[var(--border-color)] shadow-sm">
+                <label class="font-medium sm:block text-[var(--text-secondary)]">แสดง:</label>
+                <div class="relative w-full md:w-auto md:flex-grow mb-4 md:mb-0">
+                    <input type="text" id="search-input" placeholder="ค้นหาหลักสูตร..." class="w-full p-3 pl-10 rounded-full border border-[var(--border-color)] bg-[var(--input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all" />
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] w-5 h-5"></i>
+                </div>
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 text-sm w-full md:w-auto">
+                    
+                    <div class="flex flex-wrap md:flex-wrap-reverse items-center lg:space-x-2 sm:space-x-0 w-full sm:w-auto">
+                        <label class="font-medium sm:block text-[var(--text-secondary)]">หมวดหมู่:</label>
+                        <div id="custom-category-filter" class="relative custom-dropdown-container w-full sm:w-48">
+                            <button class="custom-select-trigger">
+                                <span class="truncate">ทั้งหมด</span>
+                                <i data-lucide="chevrons-up-down" class="ml-2"></i>
+                            </button>
+                            <div class="custom-dropdown-panel hidden">
+                                <div class="custom-dropdown-search-wrapper">
+                                    <input type="text" class="custom-dropdown-search" placeholder="ค้นหาหมวดหมู่...">
+                                </div>
+                                <ul class="custom-dropdown-options">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap md:flex-wrap-reverse items-center lg:space-x-2 sm:space-x-0 w-full sm:w-auto">
+                        <label class="font-medium sm:block text-[var(--text-secondary)]">แสดง:</label>
+                        <div id="custom-items-per-page" class="relative custom-dropdown-container w-full sm:w-28">
+                            <button class="custom-select-trigger">
+                                <span class="truncate">ทั้งหมด</span>
+                                <i data-lucide="chevrons-up-down" class="ml-2"></i>
+                            </button>
+                            <div class="custom-dropdown-panel hidden">
+                                <ul class="custom-dropdown-options">
+                                    <li data-value="all">ทั้งหมด</li>
+                                    <li data-value="6">6</li>
+                                    <li data-value="9">9</li>
+                                    <li data-value="12">12</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap md:flex-wrap-reverse items-center lg:space-x-2 sm:space-x-0 w-full sm:w-auto justify-center">
+                        <label class="font-medium sm:block text-[var(--text-secondary)] mr-1 ">มุมมอง:</label>
+                        <div class="flex items-center bg-[var(--input-bg)] p-1 rounded-full border border-[var(--border-color)]">
+                            <button class="view-toggle p-2 rounded-full" data-view="grid"><i data-lucide="layout-grid" class="w-5 h-5"></i></button>
+                            <button class="view-toggle p-2 rounded-full" data-view="list"><i data-lucide="list" class="w-5 h-5"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="course-cards-container" class="min-h-[400px]"></div>
+            <p id="no-results-message" class="hidden text-center text-xl text-[var(--text-secondary)] mt-12">ไม่พบหลักสูตรที่ตรงกับการค้นหาของคุณ</p>
+            
+            <div id="pagination-controls" class="flex justify-center items-center mt-12 space-x-4"></div>
+        </section>
+
+        <section id="course-detail-section" class="hidden py-8 transition-opacity duration-500 opacity-0">
+            <button id="back-to-courses" class="mb-6 flex items-center bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 text-md font-bold py-2 px-4 rounded-full shadow-lg shadow-red-500/30"><i data-lucide="arrow-left" class="h-5 w-5 mr-2"></i>กลับไปหน้าหลักสูตร</button>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="video-aspect-ratio bg-black flex items-center justify-center rounded-2xl overflow-hidden shadow-2xl shadow-slate-900/10 dark:shadow-black/30">
+                        <div id="player-placeholder" class="player-placeholder text-white text-center text-xl p-4 flex flex-col items-center justify-center"><i data-lucide="play-circle" class="w-16 h-16 mb-4 opacity-50"></i><span class="font-medium">เลือกวิดีโอเพื่อเริ่มต้น</span></div>
+                        <div id="resource-placeholder" class="hidden player-placeholder bg-[var(--card-bg)] text-[var(--text-primary)] text-center text-xl p-4 flex-col items-center justify-center">
+                            <i data-lucide="file-text" class="w-16 h-16 mb-4 text-[var(--text-secondary)]"></i>
+                            <span class="font-semibold">เนื้อหาบทนี้สำหรับดูได้จากเอกสารประกอบ</span>
+                            <p class="text-base text-[var(--text-secondary)] mt-2">กรุณาคลิกที่ไอคอนคลิปหนีบกระดาษในรายการบทเรียนเพื่อดูไฟล์</p>
+                        </div>
+                        <div id="youtube-player-container"></div>
+                    </div>
+                    <div class="bg-[var(--card-bg)] rounded-2xl shadow-lg p-6 md:p-8 border border-[var(--border-color)]">
+                         <h2 id="course-detail-title" class="text-3xl md:text-4xl font-extrabold mb-4"></h2>
+                         <hr class="border-[var(--border-color)] mb-4">
+                         <p id="course-detail-description" class="text-lg text-[var(--text-secondary)] mb-6"></p>
+                    </div>
+                </div>
+                <div class="lg:col-span-1">
+                    <div class="bg-[var(--card-bg)] p-4 rounded-2xl border border-[var(--border-color)] shadow-lg">
+                        <div id="progress-container" class="mb-4 p-2">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-semibold inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline bg-blue-500 text-white rounded-full">ความคืบหน้าของคอร์ส</span>
+                                <button id="reset-all-progress" class="text-xs bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center space-x-1">
+                                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                                    <span>รีเซ็ตทั้งหมด</span>
+                                </button>
+                            </div>
+                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 progress-bar-container">
+                                <div id="progress-bar" class="h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                             <div class="text-right mt-1">
+                                <span id="progress-text" class="text-sm font-medium text-[var(--text-primary)]">0%</span>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold p-2 border-t border-[var(--border-color)] ">เนื้อหาบทเรียน</h3>
+                        <div id="video-parts-container" class="mt-2 max-h-[50vh] overflow-y-auto pr-2 space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="'app-footer" class="hidden w-full bg-[var(--card-bg)] text-[var(--text-secondary)] text-center p-4 mt-8 border-t border-[var(--border-color)]">
+            &copy; <span id="currentYear"></span> <a href="https://github.com/chaiwat20180" target="_blank" rel="noopener noreferrer" class="font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">Chaiwat Kwanta</a>. All rights reserved.
+    </footer>
+    <div id="key-modal" class="fixed inset-0 hidden items-center justify-center z-50 bg-slate-900/80 backdrop-blur-sm p-4"></div>
+    <div id="message-box" class="fixed bottom-6 right-6 flex items-center space-x-3 text-white px-5 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-500 ease-out z-50"></div>
+
+    <script>
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        
+        let youtubePlayer, isYouTubeApiReady = false;
+        let queuedVideo = null; 
+        window.onYouTubeIframeAPIReady = () => { 
+            isYouTubeApiReady = true; 
+            if (queuedVideo) {
+                playYouTubeVideo(queuedVideo.videoId, queuedVideo.partIndex);
+                queuedVideo = null;
+            }
+        };
+        $('#currentYear').text(`2025 - ${new Date().getFullYear()}`);
+
+        // --- URL Obfuscation (ASCII Encoding) ---
+        const decode = (encodedArray) => encodedArray.map(code => String.fromCharCode(code)).join('');
+
+        const encodedUrls = {
+            pageAccess: [104,116,116,112,115,58,47,47,100,111,99,115,46,103,111,111,103,108,101,46,99,111,109,47,115,112,114,101,97,100,115,104,101,101,116,115,47,100,47,101,47,50,80,65,67,88,45,49,118,84,117,100,88,87,117,103,109,75,113,117,74,95,121,49,120,84,55,77,70,49,45,77,110,121,110,81,102,102,102,81,72,118,49,105,51,84,65,103,45,106,100,51,122,108,69,54,76,72,107,66,117,45,109,87,109,110,51,51,119,88,49,115,56,69,97,74,57,114,100,111,116,117,51,53,76,114,55,47,112,117,98,63,111,117,116,112,117,116,61,116,115,118,38,103,105,100,61,49,52,57,49,55,53,55,50,53,49],
+            courses: [104,116,116,112,115,58,47,47,100,111,99,115,46,103,111,111,103,108,101,46,99,111,109,47,115,112,114,101,97,100,115,104,101,101,116,115,47,100,47,101,47,50,80,65,67,88,45,49,118,84,117,100,88,87,117,103,109,75,113,117,74,95,121,49,120,84,55,77,70,49,45,77,110,121,110,81,102,102,102,81,72,118,49,105,51,84,65,103,45,106,100,51,122,108,69,54,76,72,107,66,117,45,109,87,109,110,51,51,119,88,49,115,56,69,97,74,57,114,100,111,116,117,51,53,76,114,55,47,112,117,98,63,111,117,116,112,117,116,61,116,115,118,38,103,105,100,61,48],
+            videoParts: [104,116,116,112,115,58,47,47,100,111,99,115,46,103,111,111,103,108,101,46,99,111,109,47,115,112,114,101,97,100,115,104,101,101,116,115,47,100,47,101,47,50,80,65,67,88,45,49,118,84,117,100,88,87,117,103,109,75,113,117,74,95,121,49,120,84,55,77,70,49,45,77,110,121,110,81,102,102,102,81,72,118,49,105,51,84,65,103,45,106,100,51,122,108,69,54,76,72,107,66,117,45,109,87,109,110,51,51,119,88,49,115,56,69,97,74,57,114,100,111,116,117,51,53,76,114,55,47,112,117,98,63,111,117,116,112,117,116,61,116,115,118,38,103,105,100,61,49,49,53,51,51,49,48,52,57,50],
+            keys: [104,116,116,112,115,58,47,47,100,111,99,115,46,103,111,111,103,108,101,46,99,111,109,47,115,112,114,101,97,100,115,104,101,101,116,115,47,100,47,101,47,50,80,65,67,88,45,49,118,84,117,100,88,87,117,103,109,75,113,117,74,95,121,49,120,84,55,77,70,49,45,77,110,121,110,81,102,102,102,81,72,118,49,105,51,84,65,103,45,106,100,51,122,108,69,54,76,72,107,66,117,45,109,87,109,110,51,51,119,88,49,115,56,69,97,74,57,114,100,111,116,117,51,53,76,114,55,47,112,117,98,63,111,117,116,112,117,116,61,116,115,118,38,103,105,100,61,49,53,51,48,56,55,56,57,52,57],
+            resources: [104,116,116,112,115,58,47,47,100,111,99,115,46,103,111,111,103,108,101,46,99,111,109,47,115,112,114,101,97,100,115,104,101,101,116,115,47,100,47,101,47,50,80,65,67,88,45,49,118,84,117,100,88,87,117,103,109,75,113,117,74,95,121,49,120,84,55,77,70,49,45,77,110,121,110,81,102,102,102,81,72,118,49,105,51,84,65,103,45,106,100,51,122,108,69,54,76,72,107,66,117,45,109,87,109,110,51,51,119,88,49,115,56,69,97,74,57,114,100,111,116,117,51,53,76,114,55,47,112,117,98,63,111,117,116,112,117,116,61,116,115,118,38,103,105,100,61,49,55,51,51,50,49,54,48,48,57]
+        };
+
+        const getUrl = (key) => decode(encodedUrls[key]);
+
+        let allCourses = [], filteredCourses = [], allKeys = {}, pageAccessKeys = [];
+        let selectedCourseData = null, currentPlayingIndex = -1, currentPage = 1, itemsPerPage = 'all', viewType = 'grid';
+        let currentVideoPartToPlay = null;
+
+        // --- Utility & UI Functions ---
+        const showLoading = () => $('#loading-screen').css('opacity', 1).show();
+        const hideLoading = () => { $('#loading-screen').css('opacity', 0); setTimeout(() => $('#loading-screen').hide(), 500); };
+        const showErrorMessage = (msg) => { $('#error-message p').text(`เกิดข้อผิดพลาด: ${msg}`); $('#error-message').removeClass('hidden').addClass('flex'); setTimeout(() => $('#error-message').removeClass('flex').addClass('hidden'), 5000); };
+        
+        function showMessageBox(message, type = 'success') {
+            const $box = $('#message-box').html(`<i id="message-box-icon" class="w-5 h-5" data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}"></i><p>${message}</p>`);
+            $box.removeClass('bg-teal-500 bg-red-500').addClass(type === 'success' ? 'bg-teal-500' : 'bg-red-500');
+            lucide.createIcons();
+            $box.removeClass('translate-y-20 opacity-0').addClass('translate-y-0 opacity-100');
+            setTimeout(() => $box.removeClass('translate-y-0 opacity-100').addClass('translate-y-20 opacity-0'), 4000);
+        }
+
+        function showModal(modalId, content) {
+            const $modal = $(`#${modalId}`);
+            if (content) $modal.html(content);
+            $modal.removeClass('hidden').addClass('flex');
+            $('body').addClass('overflow-hidden');
+            setTimeout(() => $modal.find('.transform').removeClass('scale-95 opacity-0').addClass('scale-100 opacity-100'), 100);
+        }
+
+        function hideModal(modalId) {
+            const $modal = $(`#${modalId}`);
+            $modal.find('.transform').removeClass('scale-100 opacity-100').addClass('scale-95 opacity-0');
+            setTimeout(() => { $modal.removeClass('flex').addClass('hidden'); $('body').removeClass('overflow-hidden'); }, 300);
+        }
+
+        const parseTSV = (text) => {
+            if (!text || typeof text !== 'string') return [];
+            const [headerLine, ...lines] = text.trim().split('\n');
+            if (!headerLine) return [];
+            const headers = headerLine.split('\t').map(h => h.trim());
+            return lines.map(line => line.split('\t').reduce((obj, val, i) => (obj[headers[i]] = val.trim(), obj), {}));
+        };
+
+        // --- Theme Management ---
+        function applyTheme(theme) {
+            if (theme === 'dark') { $('html').addClass('dark'); } 
+            else { $('html').removeClass('dark'); }
+            localStorage.setItem('theme', theme);
+        }
+        $('#theme-toggle').on('click', () => applyTheme($('html').hasClass('dark') ? 'light' : 'dark'));
+
+        // --- App Initialization & Access Control ---
+        async function startApp() {
+            applyTheme(localStorage.getItem('theme') || 'light');
+            viewType = localStorage.getItem('viewType') || 'grid';
+            if (sessionStorage.getItem('isAuthorized') === 'true') { await loadMainContent(); return; }
+            showLoading();
+            try {
+                const res = await $.ajax({ url: getUrl('pageAccess'), dataType: 'text' });
+                pageAccessKeys = parseTSV(res);
+                hideLoading();
+                showModal('access-gate-modal');
+            } catch (error) {
+                console.error("Critical Error fetching access keys:", error);
+                showErrorMessage("ไม่สามารถโหลด Key Access ได้");
+                hideLoading();
+            }
+        }
+        
+        const isKeyExpired = (dateString) => {
+            if (!dateString) return false;
+            let expireDate;
+            if (dateString.includes('/')) {
+                const [day, month, year] = dateString.split('/');
+                expireDate = new Date(year, month - 1, day);
+            } else if (dateString.includes('-')) {
+                const [year, month, day] = dateString.split('-');
+                expireDate = new Date(year, month - 1, day);
+            } else {
+                expireDate = new Date(dateString);
+            }
+            if (isNaN(expireDate.getTime())) return false;
+            const invalidFromDate = new Date(expireDate);
+            invalidFromDate.setDate(invalidFromDate.getDate() + 1);
+            invalidFromDate.setHours(0, 0, 0, 0);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return today >= invalidFromDate;
+        };
+
+        $(document).on('click', '#submit-global-key', async function() {
+            const enteredKey = $('#global-key-input').val().trim();
+            const $msg = $('#global-key-validation-message');
+            if (!enteredKey) { $msg.text('กรุณาป้อน Key Access'); return; }
+            const keyData = pageAccessKeys.find(k => k.KeyAccess.toLowerCase() === enteredKey.toLowerCase());
+            if (keyData) {
+                if (isKeyExpired(keyData.ExpireDate)) { $msg.text('Key Access หมดอายุ รบกวนติดต่อผู้ดูแล'); return; }
+                $msg.text('');
+                sessionStorage.setItem('isAuthorized', 'true');
+                hideModal('access-gate-modal');
+                await loadMainContent();
+            } else { $msg.text('Key Access ไม่ถูกต้อง'); }
+        });
+        $(document).on('keypress', '#global-key-input', e => { if (e.which === 13) $('#submit-global-key').click(); });
+
+        async function loadMainContent() {
+            showLoading();
+            $('#app-header, #app-main, #app-footer').removeClass('hidden');
+            try {
+                const results = await Promise.allSettled([
+                    $.ajax({ url: getUrl('courses'), dataType: 'text' }),
+                    $.ajax({ url: getUrl('videoParts'), dataType: 'text' }),
+                    $.ajax({ url: getUrl('keys'), dataType: 'text' }),
+                    $.ajax({ url: getUrl('resources'), dataType: 'text' })
+                ]);
+
+                const successfulResults = results.map((result, index) => {
+                    if (result.status === 'rejected') {
+                        const sheetNames = ['courses', 'videoParts', 'keys', 'resources'];
+                        throw new Error(`ไม่สามารถโหลดข้อมูล '${sheetNames[index]}' ได้`);
+                    }
+                    return result.value;
+                });
+
+                const [coursesRes, partsRes, keysRes, resourcesRes] = successfulResults;
+
+                const rawCourses = parseTSV(coursesRes), allVideoParts = parseTSV(partsRes), rawKeys = parseTSV(keysRes), rawResources = parseTSV(resourcesRes || "");
+                const resourcesByPartId = rawResources ? rawResources.reduce((acc, res) => { (acc[res.partId] = acc[res.partId] || []).push(res); return acc; }, {}) : {};
+                
+                allKeys = rawKeys.reduce((acc, key) => {
+                    if (key.keyId && key.keyValue) {
+                        if (!acc[key.keyId]) acc[key.keyId] = [];
+                        acc[key.keyId].push({ value: key.keyValue, expireDate: key.ExpireDate || null });
+                    }
+                    return acc;
+                }, {});
+
+                allCourses = rawCourses.map(course => {
+                    const courseVideoParts = allVideoParts.filter(p => p.courseId === course.id).map(p => ({ ...p, title: p.partTitle, resources: resourcesByPartId[p.partId] || [] }));
+                    const firstLockedPart = courseVideoParts.find(p => p.keyId);
+                    return { ...course, videoParts: courseVideoParts, courseKeyId: firstLockedPart ? firstLockedPart.keyId : null };
+                });
+
+                const categories = [...new Set(allCourses.flatMap(c => c.category ? c.category.split(',').map(cat => cat.trim()) : []).filter(Boolean))];
+                const $categoryOptions = $('#custom-category-filter .custom-dropdown-options');
+                $categoryOptions.empty();
+                $categoryOptions.append('<li data-value="all" class="selected">ทั้งหมด</li>');
+                categories.forEach(category => {
+                    $categoryOptions.append(`<li data-value="${category}">${category}</li>`);
+                });
+                
+                $('#custom-items-per-page').data('value', 'all');
+                $('#custom-items-per-page .custom-select-trigger span').text('ทั้งหมด');
+                $('#custom-items-per-page .custom-dropdown-options li[data-value="all"]').addClass('selected');
+
+                filteredCourses = [...allCourses];
+                renderCourses();
+                $('#course-list-section').css('opacity', 1);
+            } catch (error) {
+                console.error("Error fetching main content:", error);
+                showErrorMessage(error.message || "ไม่สามารถโหลดข้อมูลหลักสูตรได้");
+            } finally {
+                hideLoading();
+                lucide.createIcons();
+            }
+        }
+        
+        $('#logout-button').on('click', () => { sessionStorage.clear(); localStorage.clear(); location.reload(); });
+        
+        // Support Modal Logic
+        $('#support-button').on('click', () => {
+             showModal('support-modal')
+             lucide.createIcons();
+        });
+        $(document).on('click', '#close-support-modal', () => hideModal('support-modal'));
+        $(document).on('click', '#support-modal', function(e) {
+            if ($(e.target).is('#support-modal')) {
+                hideModal('support-modal');
+            }
+        });
+
+        $(document).on('click', '.support-tab', function() {
+            const tabId = $(this).data('tab');
+            $('.support-tab').removeClass('active');
+            $(this).addClass('active');
+
+            $('.support-tab-content').addClass('hidden');
+            $('#tab-' + tabId).removeClass('hidden');
+        });
+
+
+        function initCustomDropdowns() {
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.custom-dropdown-container').length) {
+                    $('.custom-dropdown-panel').addClass('hidden');
+                    $('.custom-select-trigger').removeClass('open');
+                }
+            });
+
+            $('.custom-select-trigger').on('click', function(e) {
+                e.stopPropagation();
+                const $container = $(this).closest('.custom-dropdown-container');
+                const $panel = $container.find('.custom-dropdown-panel');
+                
+                $('.custom-dropdown-panel').not($panel).addClass('hidden');
+                $('.custom-select-trigger').not(this).removeClass('open');
+
+                $panel.toggleClass('hidden');
+                $(this).toggleClass('open');
+                
+                if ($(this).hasClass('open')) {
+                    $panel.find('.custom-dropdown-search').val('').keyup().focus();
+                }
+            });
+
+            $('.custom-dropdown-options').on('click', 'li', function() {
+                const $container = $(this).closest('.custom-dropdown-container');
+                const $trigger = $container.find('.custom-select-trigger');
+                const value = $(this).data('value');
+                const text = $(this).text();
+
+                $trigger.find('span').text(text);
+                $container.data('value', value);
+
+                $container.find('li').removeClass('selected');
+                $(this).addClass('selected');
+
+                $trigger.removeClass('open');
+                $container.find('.custom-dropdown-panel').addClass('hidden');
+
+                const containerId = $container.attr('id');
+                if (containerId === 'custom-category-filter') {
+                    applyFiltersAndRender();
+                } else if (containerId === 'custom-items-per-page') {
+                    itemsPerPage = value.toString();
+                    currentPage = 1;
+                    renderCourses();
+                }
+            });
+
+            $('.custom-dropdown-search').on('keyup', function() {
+                const searchTerm = $(this).val().toLowerCase();
+                const $options = $(this).closest('.custom-dropdown-panel').find('.custom-dropdown-options li');
+                
+                $options.each(function() {
+                    const text = $(this).text().toLowerCase();
+                    $(this).toggleClass('hidden', !text.includes(searchTerm));
+                });
+            });
+        }
+
+        // --- Course Rendering, Filtering, Pagination ---
+        function applyFiltersAndRender() {
+            const searchTerm = $('#search-input').val().toLowerCase();
+            const selectedCategory = $('#custom-category-filter').data('value') || 'all';
+
+            filteredCourses = allCourses.filter(course => {
+                const matchesSearch = course.title.toLowerCase().includes(searchTerm);
+                const courseCategories = course.category ? course.category.split(',').map(cat => cat.trim()) : [];
+                const matchesCategory = selectedCategory === 'all' || courseCategories.includes(selectedCategory);
+                return matchesSearch && matchesCategory;
+            });
+            currentPage = 1;
+            renderCourses();
+        }
+
+        function renderCourses() {
+            const $container = $('#course-cards-container').empty();
+            if (filteredCourses.length === 0) {
+                $('#no-results-message').removeClass('hidden');
+                $('#pagination-controls').addClass('hidden');
+                $container.removeClass('grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 space-y-3');
+                return;
+            }
+            $('#no-results-message').addClass('hidden');
+            
+            const perPage = itemsPerPage === 'all' ? filteredCourses.length : parseInt(itemsPerPage);
+            const totalPages = Math.ceil(filteredCourses.length / perPage);
+            currentPage = Math.max(1, Math.min(currentPage, totalPages));
+            const paginatedItems = itemsPerPage === 'all' ? filteredCourses : filteredCourses.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+
+            if (viewType === 'grid') {
+                // MODIFIED: Changed grid columns for better responsiveness
+                $container.removeClass('space-y-3').addClass('grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6');
+                paginatedItems.forEach(course => $container.append(createCourseGridCard(course)));
+            } else {
+                $container.removeClass('grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6').addClass('space-y-4');
+                paginatedItems.forEach(course => $container.append(createCourseListCard(course)));
+            }
+            updatePaginationControls(filteredCourses.length, totalPages);
+            lucide.createIcons();
+            updateActiveViewToggle();
+        }
+        
+        const getTagColorClasses = (index) => {
+            // MODIFIED: Increased tag color intensity
+            const colors = [
+                { light: 'bg-sky-200 text-sky-800 ', dark: 'dark:bg-red-500 dark:text-white' },
+                { light: 'bg-amber-200 text-amber-800', dark: 'dark:bg-sky-500 dark:text-white' },
+                { light: 'bg-emerald-200 text-emerald-800', dark: 'dark:bg-emerald-600 dark:text-white' },
+                { light: 'bg-rose-200 text-rose-800', dark: 'dark:bg-cyan-600 dark:text-white' },
+                { light: 'bg-violet-200 text-violet-800', dark: 'dark:bg-violet-500 dark:text-white' },
+                { light: 'bg-lime-200 text-lime-800', dark: 'dark:bg-lime-500 dark:text-white' }
+            ];
+            const color = colors[index % colors.length];
+            return `${color.light} ${color.dark}`;
+        };
+
+        const createTagsHTML = (categoryString) => {
+            if (!categoryString) return '';
+            const tags = categoryString.split(',').map(tag => tag.trim());
+            // MODIFIED: Added icon, reduced size, and adjusted layout for tags.
+            return `<div class="mb-3 flex flex-wrap gap-1.5">
+                ${tags.map((tag, index) => `<span class="inline-flex items-center text-xs font-semibold ${getTagColorClasses(index)} px-1.5 py-0.5 rounded-full" title="${tag}"><i data-lucide="tag" class="w-3 h-3 mr-1 flex-shrink-0"></i><span class="truncate">${tag}</span></span>`).join('')}
+            </div>`;
+        };
+
+        const createCourseGridCard = (course) => {
+            const progress = getProgress(course.id);
+            const totalParts = course.videoParts.length;
+            const completedParts = progress.length;
+            const percentage = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
+            const isUnlocked = !course.courseKeyId || localStorage.getItem(`unlocked_course_${course.id}`) === 'true';
+
+            return `<div class="bg-[var(--card-bg)] rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-[var(--border-color)] overflow-hidden group cursor-pointer transform hover:-translate-y-1 flex flex-col" data-course-id="${course.id}">
+                <div class="relative overflow-hidden aspect-video bg-slate-200 dark:bg-slate-700">
+                    <img src="${course.youtubeThumbnail || `https://placehold.co/600x400/4f46e5/ffffff?text=${encodeURIComponent(course.title)}`}" alt="${course.title}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null;this.src='https://placehold.co/600x400/334155/F8FAFC?text=Image+Error';"/>
+                    ${!isUnlocked ? `<div class="absolute top-3 right-3 bg-amber-500 text-white p-2 rounded-full shadow-lg"><i data-lucide="lock" class="w-5 h-5"></i></div>` : ''}
+                </div>
+                <div class="p-4 flex flex-col flex-grow">
+                    <h3 class="text-md font-bold mb-1 line-clamp-2 h-12">${course.title}</h3>
+                    <p class="text-sm text-[var(--text-secondary)] line-clamp-2 mb-3 h-10">${course.description || 'ไม่มีคำอธิบาย'}</p>
+                    ${createTagsHTML(course.category)}
+                    <div class="flex-grow"></div> <!-- Spacer -->
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 progress-bar-container mb-1">
+                        <div class="progress-bar-fill" style="width: ${percentage}%"></div>
+                    </div>
+                    <!-- MODIFIED: Moved lesson count under progress bar -->
+                    <div class="flex justify-between items-center text-xs text-[var(--text-secondary)] font-medium mb-4">
+                        <span class="flex items-center">
+                            <i data-lucide="book-copy" class="w-4 h-4 mr-1.5"></i>
+                            <span>${totalParts} บทเรียน</span>
+                        </span>
+                        <span>สำเร็จ ${completedParts} จาก ${totalParts}</span>
+                    </div>
+                    <div class="mt-auto">
+                         <div class="text-base bg-[var(--primary)] text-center text-white font-semibold py-2.5 px-6 rounded-full group-hover:bg-[var(--primary-hover)] transition-colors w-full">ดูคอร์ส</div>
+                    </div>
+                </div>
+            </div>`;
+        }
+        
+        const createCourseListCard = (course) => {
+            const progress = getProgress(course.id);
+            const totalParts = course.videoParts.length;
+            const completedParts = progress.length;
+            const percentage = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
+            const isUnlocked = !course.courseKeyId || localStorage.getItem(`unlocked_course_${course.id}`) === 'true';
+
+            return `<div class="bg-[var(--card-bg)] rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-[var(--border-color)] overflow-hidden group cursor-pointer transform hover:-translate-y-1 flex h-44" data-course-id="${course.id}">
+                <div class="w-32 sm:w-48 h-full flex-shrink-0 relative flex items-center justify-center bg-slate-50 dark:bg-slate-800">
+                     <img src="${course.youtubeThumbnail || `https://placehold.co/400/400/222/ffffff?text=${encodeURIComponent(course.title)}`}" alt="${course.title}" class="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null;this.src='https://placehold.co/400/334155/F8FAFC?text=Image+Error';"/>
+                     ${!isUnlocked ? `<div class="absolute top-2 right-2 bg-amber-500 text-white p-1.5 rounded-full shadow-lg"><i data-lucide="lock" class="w-4 h-4"></i></div>` : ''}
+                </div>
+                <div class="p-4 flex flex-col flex-grow w-full min-w-0">
+                    <h3 class="text-md font-bold mb-1 line-clamp-1">${course.title}</h3>
+                    <p class="text-xs text-[var(--text-secondary)] line-clamp-1 mb-2">${course.description || 'ไม่มีคำอธิบาย'}</p>
+                    ${createTagsHTML(course.category)}
+                    <div class="flex-grow"></div> <!-- Spacer -->
+                    <!-- Progress Bar -->
+                    <div class="mt-auto pt-2">
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 progress-bar-container mb-1">
+                            <div class="progress-bar-fill" style="width: ${percentage}%"></div>
+                        </div>
+                        <!-- MODIFIED: Moved lesson count under progress bar for consistency -->
+                        <div class="flex justify-between items-center text-xs text-[var(--text-secondary)] font-medium">
+                            <span class="flex items-center">
+                                <i data-lucide="book-copy" class="w-4 h-4 mr-1.5"></i>
+                                <span>${totalParts} บทเรียน</span>
+                            </span>
+                            <span>สำเร็จ ${completedParts} จาก ${totalParts}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+
+        function updatePaginationControls(totalItems, totalPages) {
+            const $pagination = $('#pagination-controls').empty();
+            if (itemsPerPage === 'all' || totalItems === 0 || totalPages <= 1) {
+                $pagination.addClass('hidden');
+                return;
+            }
+            $pagination.removeClass('hidden');
+            $pagination.html(`<button id="prev-page" class="px-4 py-2 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--primary)] hover:text-white transition-all">&lt; ก่อนหน้า</button><span id="page-info" class="text-sm font-medium">หน้า ${currentPage} จาก ${totalPages}</span><button id="next-page" class="px-4 py-2 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--primary)] hover:text-white transition-all">ต่อไป &gt;</button>`);
+            $('#prev-page').prop('disabled', currentPage === 1);
+            $('#next-page').prop('disabled', currentPage === totalPages);
+        }
+        
+        function updateActiveViewToggle() {
+            $('.view-toggle').removeClass('bg-[var(--primary)] text-white shadow-sm').addClass('text-slate-500');
+            $(`.view-toggle[data-view="${viewType}"]`).addClass('bg-[var(--primary)] text-white shadow-sm').removeClass('text-slate-500');
+        }
+
+        $('#search-input').on('keyup', applyFiltersAndRender);
+        $('.view-toggle').on('click', function() { viewType = $(this).data('view'); localStorage.setItem('viewType', viewType); renderCourses(); });
+        $(document).on('click', '#prev-page', () => { if (currentPage > 1) { currentPage--; renderCourses(); } });
+        
+        $(document).on('click', '#next-page', () => { 
+            const perPage = itemsPerPage === 'all' ? filteredCourses.length : parseInt(itemsPerPage, 10);
+            if (!perPage) return; // Guard against 0 or NaN
+            const totalPages = Math.ceil(filteredCourses.length / perPage);
+            if (currentPage < totalPages) { 
+                currentPage++; 
+                renderCourses(); 
+            } 
+        });
+
+        // --- Course Detail & Progress Tracking ---
+        $(document).on('click', '[data-course-id]', function() { selectedCourseData = allCourses.find(c => c.id === $(this).data('course-id').toString()); if (selectedCourseData) showCourseDetail(selectedCourseData); });
+
+        function showCourseDetail(course) {
+            $('#course-list-section').css('opacity', 0).addClass('hidden');
+            $('#course-detail-section').removeClass('hidden').css('opacity', 1);
+            window.scrollTo(0, 0);
+            $('#course-detail-title').text(course.title);
+            $('#course-detail-description').text(course.description);
+            renderVideoPartsList(course);
+            updateProgress(course.id);
+            if (youtubePlayer) { youtubePlayer.destroy(); youtubePlayer = null; }
+            $('#youtube-player-container').empty();
+            $('#player-placeholder').show();
+            $('#resource-placeholder').addClass('hidden').removeClass('flex');
+        }
+        
+        const getProgress = (courseId) => JSON.parse(localStorage.getItem(`progress_${courseId}`) || '[]');
+        
+        function saveProgress(courseId, partIndex) {
+            let progress = getProgress(courseId);
+            if (!progress.includes(partIndex)) {
+                progress.push(partIndex);
+                localStorage.setItem(`progress_${courseId}`, JSON.stringify(progress));
+            }
+            updateProgress(courseId);
+            if (selectedCourseData && selectedCourseData.id === courseId) {
+                const openChapters = [];
+                $('#video-parts-container details[open]').each(function() {
+                    const chapterTitle = $(this).find('summary > span').first().text();
+                    if (chapterTitle) openChapters.push(chapterTitle);
+                });
+                renderVideoPartsList(selectedCourseData, openChapters, partIndex);
+            }
+        }
+
+        function updateProgress(courseId) {
+            if (!selectedCourseData || selectedCourseData.id !== courseId) return;
+            const progress = getProgress(courseId);
+            const totalParts = selectedCourseData.videoParts.length;
+            if (totalParts === 0) { $('#progress-container').hide(); return; }
+            const completedParts = progress.length;
+            const percentage = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
+            $('#progress-container').show();
+            $('#progress-bar').css('width', `${percentage}%`);
+            $('#progress-text').text(`${completedParts}/${totalParts} (${percentage}%)`);
+        }
+        
+        const getIconForResourceType = (type) => ({ file: 'file-text', quiz: 'clipboard-check', link: 'link' }[type?.toLowerCase()] || 'paperclip');
+
+        function renderVideoPartsList(course, openChapters = null, selectedIndex = -1) {
+            const $container = $('#video-parts-container').empty();
+            const unlocked = !course.courseKeyId || localStorage.getItem(`unlocked_course_${course.id}`) === 'true';
+            const progress = getProgress(course.id);
+
+            const groupedByChapter = course.videoParts.reduce((acc, part, index) => {
+                const chapter = part.chapter || 'บทเรียนทั่วไป';
+                if (!acc[chapter]) acc[chapter] = [];
+                acc[chapter].push({ ...part, originalIndex: index });
+                return acc;
+            }, {});
+
+            if (Object.keys(groupedByChapter).length > 0) {
+                let isFirstChapter = true;
+                for (const chapter in groupedByChapter) {
+                    const parts = groupedByChapter[chapter];
+                    
+                    const chapterPartIndexes = parts.map(p => p.originalIndex);
+                    const hasCompletedPartsInChapter = chapterPartIndexes.some(idx => progress.includes(idx));
+                    let chapterResetBtn = '';
+                    if (hasCompletedPartsInChapter && unlocked) {
+                        chapterResetBtn = `
+                            <button class="reset-chapter-progress text-xs bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center space-x-1" data-chapter="${chapter}">
+                                <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                                <span>รีเซ็ตบทนี้</span>
+                            </button>
+                        `;
+                    }
+
+                    let partsHTML = '<ul class="space-y-1">';
+                    let lessonCounter = 1;
+                    parts.forEach(part => {
+                        const isLockedByPartKey = part.keyId && !unlocked;
+                        const hasVideo = part.videoId && part.videoId.trim() !== '';
+                        const hasResources = part.resources && part.resources.length > 0;
+                        const isCompleted = progress.includes(part.originalIndex);
+                        const isSelected = part.originalIndex === selectedIndex;
+                        
+                        const canShowResources = hasResources && (!part.keyId || unlocked);
+                        const resourcesHTML = canShowResources ? `<div class="resource-list hidden pl-12 pr-4 pb-3 pt-2"><ul class="space-y-2 border-t border-[var(--border-color)] pt-3 ">${part.resources.map(res => `<li><a href="${res.resourceUrl}" target="_blank" rel="noopener noreferrer" class="flex items-center  hover:underline text-sm"><i data-lucide="${getIconForResourceType(res.resourceType)}" class="w-4 h-4 mr-2"></i><span>${res.resourceTitle}</span></a></li>`).join('')}</ul></div>` : '';
+                        const resourceBtn = canShowResources ? `<button class="resource-toggle p-2 rounded-full"><i data-lucide="paperclip" class="w-5 h-5"></i></button>` : '';
+                        
+                        let actionIcon = '';
+                        if (isLockedByPartKey) {
+                            actionIcon = `<i data-lucide="lock" class="text-amber-500 w-6 h-6"></i>`;
+                        } else if (hasVideo) {
+                            actionIcon = `<i data-lucide="play-circle" class="text-[var(--accent)] w-6 h-6"></i>`;
+                        } else {
+                            actionIcon = `<div class="w-6 h-6"></div>`;
+                        }
+
+                        let statusIcon = '';
+                        if (isCompleted && !isLockedByPartKey) {
+                            statusIcon = `<i data-lucide="check-circle" class="w-5 h-5 text-green-500" title="เรียนแล้ว"></i>`;
+                        }
+
+                        const isClickable = hasVideo || hasResources || isLockedByPartKey;
+                        const cursorClass = isClickable ? 'cursor-pointer' : 'cursor-default';
+
+                        partsHTML += `<li class="overflow-hidden ${isSelected ? 'selected-lesson' : ''}" data-part-index="${part.originalIndex}">
+                            <div class="video-trigger flex items-center justify-between ${cursorClass} p-3 rounded-lg custom-subtle-hover transition-colors duration-200">
+                                <div class="flex items-center min-w-0">
+                                    <span class="lesson-number bg-blue-600 dark:bg-blue-700/50 text-white dark:text-slate-200 rounded-md h-8 w-8 flex items-center justify-center font-bold text-xs mr-3 flex-shrink-0">${lessonCounter++}</span>
+                                    <span class="font-medium truncate">${part.title}</span>
+                                </div>
+                                <div class="flex items-center space-x-2">${resourceBtn}${statusIcon}${actionIcon}</div>
+                            </div>
+                            ${resourcesHTML}
+                        </li>`;
+                    });
+                    partsHTML += '</ul>';
+
+                    const shouldBeOpen = openChapters ? openChapters.includes(chapter) : isFirstChapter;
+
+                    const chapterHTML = `
+                        <details class="chapter-accordion bg-[var(--card-bg)] rounded-xl border border-[var(--border-color)] overflow-hidden" ${shouldBeOpen ? 'open' : ''}>
+                            <summary class="p-4 font-bold text-lg flex justify-between items-center transition-colors duration-200">
+                                <span class="truncate mr-4">${chapter}</span>
+                                <div class="flex items-center space-x-2">
+                                    ${chapterResetBtn}
+                                    <i data-lucide="chevron-right" class="chapter-arrow w-5 h-5 text-[var(--text-secondary)]"></i>
+                                </div>
+                            </summary>
+                            <div class="p-2 border-t border-[var(--border-color)] bg-[var(--card-bg)]">
+                                ${partsHTML}
+                            </div>
+                        </details>
+                    `;
+                    $container.append(chapterHTML);
+                    isFirstChapter = false;
+                }
+                lucide.createIcons();
+            } else {
+                $container.append('<p class="text-center text-[var(--text-secondary)]">ไม่มีบทเรียนสำหรับหลักสูตรนี้</p>');
+            }
+        }
+
+        $('#back-to-courses, #home-button').on('click', () => {
+            $('#course-detail-section').css('opacity', 0).addClass('hidden');
+            $('#course-list-section').removeClass('hidden').css('opacity', 1);
+            renderCourses(); // Re-render to update progress bars
+            if (youtubePlayer) { youtubePlayer.destroy(); youtubePlayer = null; }
+            $('#youtube-player-container').empty();
+            $('#player-placeholder').show();
+            selectedCourseData = null; currentPlayingIndex = -1;
+        });
+        
+        $(document).on('click', '.video-trigger', function() {
+            const partIndex = $(this).closest('li').data('part-index');
+            if (partIndex === undefined || !selectedCourseData) return;
+
+            $('#video-parts-container li').removeClass('selected-lesson');
+            $(this).closest('li').addClass('selected-lesson');
+
+            const part = selectedCourseData.videoParts[partIndex];
+            currentVideoPartToPlay = part;
+
+            const courseIsUnlocked = !selectedCourseData.courseKeyId || localStorage.getItem(`unlocked_course_${selectedCourseData.id}`) === 'true';
+            const partIsAccessible = !part.keyId || courseIsUnlocked;
+
+            if (partIsAccessible) {
+                playYouTubeVideo(part.videoId, partIndex, true);
+            } else {
+                const modalContent = `<div class="bg-[var(--card-bg)] rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-md border border-[var(--border-color)] transform transition-all duration-300 scale-95 opacity-0" id="key-modal-content"><h3 class="text-2xl font-bold mb-2">ต้องการคีย์สำหรับหลักสูตรนี้</h3><p class="text-[var(--text-secondary)] mb-6">โปรดป้อนคีย์เพื่อปลดล็อกวิดีโอทั้งหมด</p><input type="password" id="key-input" class="w-full p-3 border border-[var(--border-color)] rounded-lg mb-2 bg-[var(--input-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]" placeholder="คีย์การเข้าถึงหลักสูตร" /><p id="key-validation-message" class="text-red-500 text-sm mb-4 h-5"></p><div class="flex justify-end space-x-3"><button id="cancel-key-input" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full font-semibold transition-all shadow-lg shadow-red-500/30">ยกเลิก</button><button id="submit-key-input" class="px-5 py-2 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white rounded-full font-semibold transition-all shadow-lg shadow-indigo-500/30">ยืนยัน</button></div></div>`;
+                showModal('key-modal', modalContent);
+            }
+        });
+
+        $(document).on('click', '.resource-toggle', function(e) { 
+            e.stopPropagation(); 
+            $(this).closest('li').find('.resource-list').slideToggle(200); 
+            $(this).toggleClass('active'); 
+        });
+
+        $(document).on('click', '#submit-key-input', function() {
+            const enteredKey = $('#key-input').val().trim();
+            const $msg = $('#key-validation-message');
+            if (!enteredKey) { $msg.text('กรุณาป้อนคีย์'); return; }
+            if (!selectedCourseData) { $msg.text('เกิดข้อผิดพลาด: ไม่ได้เลือกหลักสูตร'); return; }
+            
+            const courseKeys = allKeys[selectedCourseData.courseKeyId];
+            if (!courseKeys || courseKeys.length === 0) {
+                $msg.text('ไม่พบข้อมูลคีย์สำหรับหลักสูตรนี้');
+                showMessageBox('ไม่พบข้อมูลคีย์', 'error');
+                return;
+            }
+
+            const validKeyData = courseKeys.find(key => key.value.toLowerCase() === enteredKey.toLowerCase());
+
+            if (validKeyData) {
+                if (isKeyExpired(validKeyData.expireDate)) {
+                    $msg.text('Key หมดอายุแล้ว');
+                    showMessageBox('Key หมดอายุแล้ว', 'error');
+                } else {
+                    localStorage.setItem(`unlocked_course_${selectedCourseData.id}`, 'true');
+                    $msg.text('');
+                    hideModal('key-modal');
+                    showMessageBox('ปลดล็อกหลักสูตรสำเร็จ!', 'success');
+                    renderVideoPartsList(selectedCourseData);
+                    if (currentVideoPartToPlay) {
+                        const partIndex = selectedCourseData.videoParts.indexOf(currentVideoPartToPlay);
+                        playYouTubeVideo(currentVideoPartToPlay.videoId, partIndex, true);
+                    }
+                }
+            } else {
+                $msg.text('คีย์ไม่ถูกต้อง');
+                showMessageBox('คีย์ไม่ถูกต้อง', 'error');
+            }
+        });
+        
+        $(document).on('keypress', '#key-input', e => { if (e.which === 13) $('#submit-key-input').click(); });
+        $(document).on('click', '#cancel-key-input', () => hideModal('key-modal'));
+        
+        $(document).on('click', '#reset-all-progress', function() {
+            if (selectedCourseData) {
+                localStorage.removeItem(`progress_${selectedCourseData.id}`);
+                updateProgress(selectedCourseData.id);
+                renderVideoPartsList(selectedCourseData);
+                showMessageBox('รีเซ็ตความคืบหน้าของคอร์สแล้ว', 'success');
+            }
+        });
+
+        $(document).on('click', '.reset-chapter-progress', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            if (selectedCourseData) {
+                const chapterToReset = $(this).data('chapter');
+                const partIndexesInChapter = [];
+                selectedCourseData.videoParts.forEach((p, index) => {
+                    if ((p.chapter || 'บทเรียนทั่วไป') === chapterToReset) {
+                        partIndexesInChapter.push(index);
+                    }
+                });
+
+                let progress = getProgress(selectedCourseData.id);
+                const newProgress = progress.filter(idx => !partIndexesInChapter.includes(idx));
+                
+                const openChapters = [];
+                $('#video-parts-container details[open]').each(function() {
+                    const chapterTitle = $(this).find('summary > span').first().text();
+                    if (chapterTitle) openChapters.push(chapterTitle);
+                });
+
+                localStorage.setItem(`progress_${selectedCourseData.id}`, JSON.stringify(newProgress));
+                updateProgress(selectedCourseData.id);
+                renderVideoPartsList(selectedCourseData, openChapters);
+                showMessageBox(`รีเซ็ตความคืบหน้าสำหรับ '${chapterToReset}' แล้ว`, 'success');
+            }
+        });
+
+        // --- YouTube Player ---
+        function playYouTubeVideo(videoId, partIndex, isUserClick = false) {
+            const part = selectedCourseData.videoParts[partIndex];
+            const hasVideo = videoId && videoId.trim() !== '';
+
+            if (!hasVideo) {
+                if (isUserClick) {
+                    saveProgress(selectedCourseData.id, partIndex);
+                }
+                if (youtubePlayer) {
+                    youtubePlayer.destroy();
+                    youtubePlayer = null;
+                }
+                $('#youtube-player-container').empty();
+                $('#player-placeholder').hide();
+                $('#resource-placeholder').removeClass('hidden').addClass('flex');
+                currentPlayingIndex = -1; 
+                updatePlayingHighlight();
+                return;
+            }
+
+            currentPlayingIndex = partIndex;
+            updatePlayingHighlight();
+
+            if (youtubePlayer) {
+                youtubePlayer.destroy();
+                youtubePlayer = null;
+            }
+            $('#youtube-player-container').empty();
+            
+            $('#player-placeholder').hide();
+            $('#resource-placeholder').addClass('hidden').removeClass('flex');
+            
+            if (!isYouTubeApiReady) { 
+                showMessageBox('กำลังเตรียมโปรแกรมเล่นวิดีโอ...', 'success'); 
+                queuedVideo = { videoId, partIndex };
+                return; 
+            }
+            
+            youtubePlayer = new YT.Player('youtube-player-container', { videoId: videoId, playerVars: { 'autoplay': 1, 'controls': 1, 'modestbranding': 1, 'rel': 0, 'showinfo': 0, 'fs': 1, 'iv_load_policy': 3 }, events: { 'onStateChange': onPlayerStateChange } });
+        }
+        
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                saveProgress(selectedCourseData.id, currentPlayingIndex);
+
+                const nextIndex = currentPlayingIndex + 1;
+                if (nextIndex < selectedCourseData.videoParts.length) {
+                    const nextVideo = selectedCourseData.videoParts[nextIndex];
+                    const nextPartIsFree = !nextVideo.keyId;
+                    const courseIsUnlocked = !selectedCourseData.courseKeyId || localStorage.getItem(`unlocked_course_${selectedCourseData.id}`) === 'true';
+
+                    if (nextPartIsFree || courseIsUnlocked) {
+                         showMessageBox(`กำลังเล่นพาร์ทต่อไป: ${nextVideo.title}`);
+                         playYouTubeVideo(nextVideo.videoId, nextIndex);
+                    } else {
+                        showMessageBox('บทเรียนถัดไปถูกล็อก', 'error');
+                         currentPlayingIndex = -1;
+                         updatePlayingHighlight();
+                    }
+                } else {
+                    showMessageBox('คุณดูครบทุกพาร์ทแล้ว!', 'success');
+                    currentPlayingIndex = -1;
+                    updatePlayingHighlight();
+                }
+            }
+        }
+        
+        function updatePlayingHighlight() {
+            $('#video-parts-container li').removeClass('playing');
+            if (currentPlayingIndex > -1) {
+                const $item = $(`#video-parts-container li[data-part-index="${currentPlayingIndex}"]`).addClass('playing');
+                if($item.length) $item[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        $(document).ready(() => { 
+            startApp(); 
+            lucide.createIcons(); 
+            initCustomDropdowns();
+        });
+    </script>
+</body>
+</html>
+
