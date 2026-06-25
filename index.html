@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -13,18 +12,18 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <style>
         :root {
-            --background: #f8fafc;      
-            --text-primary: #575e69;     
-            --text-secondary: #64748b;   
-            --card-bg: #ffffff;          
-            --border-color: #e2e8f0;     
-            --input-bg: #f1f5f9;         
+            --background: rgba(239, 243, 247, 0.95);      
+            --text-primary: #4b5563;     
+            --text-secondary: #6b7280;   
+            --card-bg: rgba(255, 255, 255, 0.92);          
+            --border-color: #d1d5db;     
+            --input-bg: rgba(248, 250, 252, 0.95);         
             --primary: #4f46e5;          
             --primary-hover: #4338ca;    
             --secondary: #14b8a6;        
             --accent: #ec4899;           
-            --subtle-hover-bg: #f1f5f9;   
-            --chapter-header-bg: #eff6ff; 
+            --subtle-hover-bg: rgba(241, 245, 249, 0.98);   
+            --chapter-header-bg: rgba(239, 246, 255, 0.9); 
             --selected-bg: #2f2b7769;    
         }
         html.dark {
@@ -393,11 +392,46 @@
             return decodeURIComponent(escape(window.atob(base64Str)));
         }
 
+        function validateGlobalKey(key) {
+            return typeof key === 'string' && key.trim().length > 0;
+        }
+
+        function getStoredAuthKey() {
+            const encodedKey = sessionStorage.getItem('authKey');
+            if (!encodedKey) return '';
+            try {
+                return atob(encodedKey);
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function setStoredAuthKey(key) {
+            if (!validateGlobalKey(key)) return;
+            sessionStorage.setItem('authKey', btoa(key));
+        }
+
+        function clearStoredAuth() {
+            sessionStorage.removeItem('authKey');
+            sessionStorage.removeItem('authToken');
+        }
+
+        function requireAuthKey() {
+            const authKey = getStoredAuthKey();
+            if (!authKey) {
+                clearStoredAuth();
+                hideLoading();
+                $('#app-header, #app-main, #app-footer').addClass('hidden');
+                showModal('access-gate-modal');
+            }
+            return authKey;
+        }
+
         async function startApp() {
             applyTheme(localStorage.getItem('theme') || 'light');
             viewType = localStorage.getItem('viewType') || 'grid';
             
-            if (sessionStorage.getItem('authKey')) { 
+            if (getStoredAuthKey()) { 
                 await loadMainContent(); 
                 return; 
             }
@@ -423,7 +457,7 @@
                     try {
                         const result = JSON.parse(decodeBase64(encodedResult));
                         if (result.valid) {
-                            sessionStorage.setItem('authKey', btoa(enteredKey));
+                            setStoredAuthKey(enteredKey);
                             hideModal('access-gate-modal');
                             await loadMainContent();
                         } else {
@@ -449,18 +483,8 @@
             showLoading();
             $('#app-header, #app-main, #app-footer').removeClass('hidden');
             
-            const authKeyEncoded = sessionStorage.getItem('authKey');
-            let authKey = '';
-            try {
-                authKey = authKeyEncoded ? atob(authKeyEncoded) : '';
-            } catch (e) {
-                authKey = '';
-            }
+            const authKey = requireAuthKey();
             if (!authKey) {
-                hideLoading();
-                sessionStorage.removeItem('authKey');
-                sessionStorage.removeItem('authToken');
-                showModal('access-gate-modal');
                 return;
             }
             
